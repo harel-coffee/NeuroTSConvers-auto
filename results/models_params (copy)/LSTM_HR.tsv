@@ -1,0 +1,2 @@
+region	dm_method	predictors_dict	selected_predictors	fscore. mean	fscore. std
+Fusiform Gyrus	RFE_3	{'eyetracking_ts': ['Face']}	['Face_t5', 'Face_t4', 'Face_t3']	0.5007630845039095	0.0

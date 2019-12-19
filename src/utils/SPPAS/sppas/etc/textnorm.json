@@ -1,0 +1,38 @@
+{
+  "id": "textnorm",
+  "name": "Text Normalization",
+  "descr": "Text normalization segments the orthographic transcription into tokens and remove punctuation, convert numbers, etc. Requires an orthographic transcription into IPUs.",
+
+  "resources": [
+    {
+      "path": "vocab",
+      "type": "file",
+      "ext": ".vocab",
+      "name": ""
+    }
+  ],
+
+  "options": [
+    {
+      "id": "faked",
+      "type": "bool",
+      "value": true,
+      "text": "Create a tier with the faked tokens"
+    },
+
+    {
+      "id": "std",
+      "type": "bool",
+      "value": false,
+      "text": "Create a tier with the standard tokens (useful if EOT)"
+    },
+
+    {
+      "id": "custom",
+      "type": "bool",
+      "value": false,
+      "text": "Create a customized tier (useful if EOT)"
+    }
+
+  ]
+}

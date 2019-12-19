@@ -1,0 +1,7 @@
+Name	Code	indiceLabel	Label	Color
+LeftMotor	1	155	A1/2/3ulhf_L	[132, 141, 176, 0, 11570564]
+RightMotor	2	156	A1/2/3ulhf_R	[88, 53, 185, 0, 12137816]
+LeftFusiformGyrus	3	105	A37mv_L	[0, 255, 158, 0, 10419968]
+RightFusiformGyrus	4	106	A37mv_R	[255, 176, 9, 0, 635135]
+LeftSTS	5	79	A22c_L	[176, 70, 158, 0, 10372784]
+RightSTS	6	80	A22c_R	[149, 149, 255, 0, 16749973]

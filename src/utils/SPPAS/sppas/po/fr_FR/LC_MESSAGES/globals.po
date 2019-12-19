@@ -1,0 +1,33 @@
+# French translation for SPPAS
+# Copyright (c) 2011-2018 Brigitte Bigi
+# This file is distributed under the same license as the SPPAS package.
+# Brigitte Bigi <contact@sppas.org>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: SPPAS\n"
+"Report-Msgid-Bugs-To: contact@sppas.org\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: Brigitte Bigi <develop@sppas.org>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Language: en_US\n"
+"X-Generator: Poedit 2.1.1\n"
+
+msgid ":ERROR 010: "
+msgstr "Une valeur positive était attendue, alors que {value} a été donnée."
+
+msgid ":ERROR 012: "
+msgstr "La valeur minimale donnée {min_value} est supérieur à la valeur maximale donnée {max_value}."
+
+msgid ":ERROR 014: "
+msgstr "La valeur {value} est en dehors de l'intervalle [{min_value},{max_value}]."
+
+msgid ":ERROR 110: "
+msgstr "L'extension du fichier {:s} est inconnue"
+
+msgid ":ERROR 112: "
+msgstr "Le dossier {dirname} n'existe pas."

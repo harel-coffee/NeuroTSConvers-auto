@@ -1,0 +1,25 @@
+{
+  "id": "fillipus",
+  "name": "Fill in IPUs",
+  "descr": "Search for Inter-Pausal Units and fill in with a transcription. Requires an audio file and a .txt file with the transcription.",
+
+  "resources": [
+  ],
+
+  "options": [
+    {
+      "id": "min_ipu",
+      "type": "float",
+      "value": 0.300,
+      "text": "Initial minimum duration of an IPU (in seconds)"
+    },
+
+    {
+      "id": "min_sil",
+      "type": "float",
+      "value": 0.200,
+      "text": "Initial minimum duration of a silence (in seconds)"
+    }
+
+  ]
+}

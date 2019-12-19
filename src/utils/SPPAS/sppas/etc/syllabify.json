@@ -1,0 +1,45 @@
+{
+  "id": "syllabify",
+  "name": "Syllabification",
+  "descr": "Syllabification converts phonemes into classes then groups them thanks to rules. Requires time-aligned phones.",
+
+  "resources": [
+    {
+      "path": "syll",
+      "type": "file",
+      "ext": ".txt",
+      "name": "syllConfig-"
+    }
+  ],
+
+  "options": [
+    {
+      "id": "usesphons",
+      "type": "bool",
+      "value": true,
+      "text": "Syllabify inside the IPU intervals"
+    },
+
+    {
+      "id": "usesintervals",
+      "type": "bool",
+      "value": false,
+      "text": "Syllabify inside an interval tier"
+    },
+
+    {
+      "id": "tiername",
+      "type": "string",
+      "value": "TokensAlign",
+      "text": "Tier name for such interval tier:"
+    },
+
+    {
+      "id": "createclasses",
+      "type": "bool",
+      "value": true,
+      "text": "Create a tier with syllable classes"
+    }
+
+  ]
+}

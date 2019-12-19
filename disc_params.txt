@@ -1,0 +1,7 @@
+data_type: p
+nbins: 2
+mean: False
+peak: False
+kmeans: False
+threshold: 0.55
+type: raw

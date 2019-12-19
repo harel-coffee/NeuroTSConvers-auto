@@ -1,0 +1,31 @@
+{
+  "id": "phonetize",
+  "name": "Phonetization",
+  "descr": "Grapheme to phoneme conversion represents sounds with phonetic signs. Requires a Text Normalization.",
+
+  "resources": [
+    {
+      "path": "dict",
+      "type": "file",
+      "ext": ".dict",
+      "name": ""
+    }
+  ],
+
+  "options": [
+    {
+      "id": "phonunk",
+      "type": "bool",
+      "value": true,
+      "text": "Let's try to phonetize unknown tokens"
+    },
+
+    {
+      "id": "usestdtokens",
+      "type": "bool",
+      "value": false,
+      "text": "Phonetize from standard tokens instead of faked tokens"
+    }
+
+  ]
+}

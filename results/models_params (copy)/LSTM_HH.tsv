@@ -1,0 +1,2 @@
+region	dm_method	predictors_dict	selected_predictors	fscore. mean	fscore. std
+Fusiform Gyrus	RFE_3	{'facial_features_ts': [' pose_Rx', ' pose_Ry', ' pose_Rz']}	[' pose_Rx_t4', ' pose_Ry_t3', ' pose_Rz_t3']	0.4888864796401271	0.0

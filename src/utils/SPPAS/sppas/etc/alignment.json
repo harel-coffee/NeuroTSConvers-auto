@@ -1,0 +1,52 @@
+{
+  "id": "alignment",
+  "name": "Alignment",
+  "descr": "Time-alignment of speech audio with its corresponding transcription at the phone and token levels. Requires a Phonetization.",
+
+  "resources": [
+    {
+      "path": "models",
+      "type": "directory",
+      "ext": "",
+      "name": "models-"
+    }
+  ],
+
+  "options": [
+    {
+      "id": "aligner",
+      "type": "string",
+      "value": "julius",
+      "text": "Speech automatic aligner system (julius, hvite, basic)"
+    },
+
+    {
+      "id": "basic",
+      "type": "bool",
+      "value": false,
+      "text": "Perform basic alignment if the aligner fails"
+    },
+
+    {
+      "id": "clean",
+      "type": "bool",
+      "value": true,
+      "text": "Remove working directory"
+    },
+
+    {
+      "id": "activity",
+      "type": "bool",
+      "value": true,
+      "text": "Create the Activity tier"
+    },
+
+    {
+      "id": "activityduration",
+      "type": "bool",
+      "value": false,
+      "text": "Create the ActivityDuration tier"
+    }
+
+  ]
+}
