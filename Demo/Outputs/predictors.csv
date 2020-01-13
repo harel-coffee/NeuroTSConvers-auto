@@ -1,0 +1,2 @@
+LeftMotor;RightMotor;LeftFusiformGyrus;RightFusiformGyrus;LeftSTS;RightSTS
+{'speech_left_ts': ['disc_IPU_left']};{'speech_left_ts': ['IPU_left']};{'energy_ts': ['mouth_AU', 'eyes_AU', 'total_AU', 'head_rotation_energy', 'head_translation_energy', 'head_positions']};{'energy_ts': ['mouth_AU', 'eyes_AU', 'total_AU', 'head_rotation_energy', 'head_translation_energy', 'head_positions']};{'speech_left_ts': ['IPU_left'], 'speech_ts': ['disc_IPU', 'Overlap']};{'speech_ts': ['disc_IPU']}
