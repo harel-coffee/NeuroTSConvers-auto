@@ -1,32 +1,35 @@
-Modality	Features	Representation as time series (per secondes)	Type	Remarques
-	signal	Signal envelope, representing the signal intensity.		
-	talk	binary variable representing if there is a talk or not at recorded time, i.e., direct projection of IPU in the axe of the BOLD signal.		
-	IUP	The percentage of IPUs in each time step. It changes betwee, 0 and 1. It is equal to 1 if the timestep (1.2s) is full talk, and equal to 0 if no talk.		
-	overlap	The percentage of overlaps  in each time step. Similarly to the IPU variable.		
-	filled_breaks	The percentage of filled breaks duration  in each time step.	'[u"euh",u"heu",u"hum",u"mh"]
-	feed_back	Percentage of feedbacks in each time step.	'[u"mh",u"ouais",u"oui",u''non'',u''ah'',u"mouais"]+ OK_FORMS + VOILA_FORMS + DACCORD_FORMS + LAUGHTER_FORMS'
-Speech	discourse_markers	The percentage of discourse marskers durations in each tim step.	'[u"alors",u"mais",u"donc",u''et'',u''puis'',u''enfin'',u''parceque'',u''parcequ'',u''ensuite'']'
-	Laughers	The  percentage of laughers durations in each tim step.		'[u''@'',u''@ @'',u''@@'']'
-	particles_items	The duration in percentage of discourse marskers in each tim step. The next version is to consider just the particles in the end of each IPU as binary variable.		'[u"quoi",u"hein",u"bon",u''mais'',u''ben'',u''beh'',u''enfin'',u''vois'',u''putain'',u''bref'']'
-	reaction_time	The waiting or reaction time after responding. It is positive if the interlocutor wait some time then respond, or negative if there is overlap.		
-	Polarity	This metric is calculated for each IPU. Then, we consider the obtained value (in the range [0,1]) at the time point close to the center of the IPU.		https://stackabuse.com/python-for-nlp-introduction-to-the-pattern-library/
-	Subjectivity	This metric is calculated for each IPU. Then, we consider the obtained value (in the range [0,1]) at the time point close to the center of the IPU.		https://stackabuse.com/python-for-nlp-introduction-to-the-pattern-library/
-	Lexical_richness_1	This metric is calculated for each IPU. Then, we consider the obtained value (in the range [0,1]) at the time point close to the center of the IPU.		(nbr of different tokens) / (total nbr of tokens)
-	Lexical_richness_2	Similarily to lexical_richness_1		(nbr of adjectifs + nbr of adverbes) / (total nbr of tokens)
-	gaze_angle_x	Gaze angle x coordinate		
-	gaze_angle_y	Gaze angle y coordinate		
-	pose_Tx	Head movement with respect to the x axis		
-	pose_Ty	Head movement with respect to the y axis		These variables are calculated for each image of the videos.
-	pose_Tz	Head movement with respect to the z axis		 Since the images frequency is constant, a resampling by mean can be used to synchronize them with the BOLD signal.
-	pose_Rx	Head rotation relative to the x axis		
-Video	pose_Ry	Head rotation relative to the y axis		
-	pose_Rz	Head rotation relative to the z axis		
-	AU0i_r	Ith Facial Action Unit, I in [1,4,5,6,7,9,10,12,14,15,17,20,23,25,26,45]		
-	(x_i, y_i)	L2D landmarks		
-	video_emotions	Emotions from videos image per image. This variable is optional because facial movements express emotions (https://en.wikipedia.org/wiki/Facial_Action_Coding_System)		
-	x, y	Gaze coordinates.		
-	Vx, Vy	Speed of the gaze coordinates.		
-Eyetracking	saccades	Binary variable, 1 if there is saccades, else 0.		
-	Face	Binary variable, 1 if the subject is looking at the face of the agent, else 0.		
-	Eye	Binary variable, 1 if the subject is looking at one eye of the agent, else 0.		
-	Mouth	Binary variable, 1 if the subject is looking at the mouth of the agent, else 0.		
+Modality	Features	Description	Remarques
+Speech	signal	Signal envelope, representing the signal intensity.	
+	talk	binary variable representing if there is a talk or not at recorded time, i.e., direct projection of IPU in the axe of the BOLD signal.	
+	IUP	The percentage of IPUs in each time step. It changes betwee, 0 and 1. It is equal to 1 if the timestep (1.2s) is full talk, and equal to 0 if no talk.	
+	overlap	The percentage of overlaps  in each time step. Similarly to the IPU variable.	
+	filled_breaks	The percentage of filled breaks duration  in each time step.	"'[u""euh"",u""heu"",u""hum"",u""mh""]"
+	feed_back	Percentage of feedbacks in each time step.	"'[u""mh"",u""ouais"",u""oui"",u''non'',u''ah'',u""mouais""]+ OK_FORMS + VOILA_FORMS + DACCORD_FORMS + LAUGHTER_FORMS'"
+	discourse_markers	The percentage of discourse marskers durations in each tim step.	"'[u""alors"",u""mais"",u""donc"",u''et'',u''puis'',u''enfin'',u''parceque'',u''parcequ'',u''ensuite'']'"
+	Laughers	The  percentage of laughers durations in each tim step.	'[u''@'',u''@ @'',u''@@'']'
+	particles_items	The duration in percentage of discourse marskers in each tim step. The next version is to consider just the particles in the end of each IPU as binary variable.	"'[u""quoi"",u""hein"",u""bon"",u''mais'',u''ben'',u''beh'',u''enfin'',u''vois'',u''putain'',u''bref'']'"
+	reaction_time	The waiting or reaction time after responding. It is positive if the interlocutor wait some time then respond, or negative if there is overlap.	
+	Polarity	This metric is calculated for each IPU. Then, we consider the obtained value (in the range [0,1]) at the time point close to the center of the IPU.	https://stackabuse.com/python-for-nlp-introduction-to-the-pattern-library/
+	Subjectivity	This metric is calculated for each IPU. Then, we consider the obtained value (in the range [0,1]) at the time point close to the center of the IPU.	https://stackabuse.com/python-for-nlp-introduction-to-the-pattern-library/
+	Lexical_richness_1	This metric is calculated for each IPU. Then, we consider the obtained value (in the range [0,1]) at the time point close to the center of the IPU.	(nbr of different tokens) / (total nbr of tokens)
+	Lexical_richness_2	Similarily to lexical_richness_1	(nbr of adjectifs + nbr of adverbes) / (total nbr of tokens)
+Video	gaze_angle_x	Gaze angle x coordinate	
+	gaze_angle_y	Gaze angle y coordinate	
+	pose_Tx	Head movement with respect to the x axis	
+	pose_Ty	Head movement with respect to the y axis	
+	pose_Tz	Head movement with respect to the z axis	
+	pose_Rx	Head rotation relative to the x axis	
+	pose_Ry	Head rotation relative to the y axis	
+	pose_Rz	Head rotation relative to the z axis	
+	AU0i_r	Ith Facial Action Unit, I in [1,4,5,6,7,9,10,12,14,15,17,20,23,25,26,45]	
+	(x_i, y_i)	L2D landmarks	
+	x, y	Gaze coordinates.	
+	Vx, Vy	Speed of the gaze coordinates.	
+	Head_translation_energy	Kinetic energy of head translation	
+	Head_rotation_energy	Kinetic energy of head rotation	
+	Total_AU	Sum of action units	
+	Emotions	Emotions from videos image per imagg using facial action units.	'Happiness', 'Sadness','Surprise', 'Fear', 'Anger', 'Disgust'
+Eyetracking	saccades	Binary variable, 1 if there is saccades, else 0.	
+	Face	Binary variable, 1 if the subject is looking at the face of the agent, else 0.	
+	Eye	Binary variable, 1 if the subject is looking at one eye of the agent, else 0.	
+	Mouth	Binary variable, 1 if the subject is looking at the mouth of the agent, else 0.	
