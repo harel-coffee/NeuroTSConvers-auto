@@ -3,28 +3,30 @@ import os
 
 from sklearn.preprocessing import MinMaxScaler
 from sklearn import linear_model
-from sklearn.metrics import recall_score, precision_score, f1_score, average_precision_score, accuracy_score
+from sklearn.metrics import recall_score, precision_score, f1_score, average_precision_score, accuracy_score, cohen_kappa_score
 
-from sklearn.linear_model import SGDClassifier
-
-from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectPercentile, chi2
 from sklearn.preprocessing import StandardScaler
 
+from sklearn.linear_model import SGDClassifier
+from sklearn.svm import SVC
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, BaggingClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
-
+from sklearn import linear_model
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import KFold
 import numpy as np
 import pandas as pd
 
 import random as rd
-from sklearn import linear_model
 from scipy.signal import find_peaks
-from src. prediction. tools import toSuppervisedData, get_behavioral_data
+from src. prediction. tools import get_behavioral_data
 from src. prediction. lstm import *
 import itertools as it
+
+from imblearn.over_sampling import ADASYN
 
 #===========================================
 global_dict_models = {
@@ -37,7 +39,8 @@ global_dict_models = {
 		"LASSO": linear_model.Lasso (),
 		"baseline": DummyClassifier (),
 		"LREG": linear_model.LogisticRegression (),
-		"ada": AdaBoostClassifier ()
+		"ada": AdaBoostClassifier (),
+		"KNN": KNeighborsClassifier ()
 		}
 
 #===========================================
@@ -98,35 +101,46 @@ def get_items (predictors, external_predictors):
 #===========================================
 
 def get_max_of_list (data):
-	best_model = data [0]
+	best_line = data [0]
 	best_index = 0
 	i = 1
 	for line in data[1:]:
 		""" select the best fscore based on the mean if recall, precision, and fscore """
 		#if np.mean (line[1]) > np. mean (best_model [1]):
 		""" select best model based on the fscore """
-		if line[1][2] > best_model [1][2]:
-			best_model = line
+		if line[1][2] > best_line [1][2]:
 			best_index = i
 		i += 1
 
-	return best_model, best_index
+	return best_index
 
 #===========================================
 def k_fold_cross_validation (data, model, lag, params, block_size):
-	score = []
-	# split train data into nb_sets blocks
-	splits = [data [i : i + block_size] for i in range (0, len (data), block_size)]
-	for i in range (len (splits)):
-		# validation data
-		validation_convers  = splits [i]
-		# train data
-		train_convers = np. array ([element for bs in splits [0 : i] +  splits [i + 1 : ] for element in bs])
-		pred_model = train_model (train_convers, model, params, lag)
-		score. append (test_model (validation_convers[:, 1:], validation_convers[:, 0], pred_model, lag, model))
+	scores = []
 
-	results = np. mean (score, axis = 0)
-	return (results)
+	kf_obj = KFold (n_splits = 10)
+	splits = kf_obj. split (data)
+
+	for train_index, test_index in splits:
+
+		X_test = data [test_index,1:]. copy ()
+		y_test = data [test_index,0]. copy ()
+
+		X_train =  data [train_index, 1:]. copy ()
+		y_train =  data [train_index, 0]. copy ()
+
+		# Handling oversampling
+		ros = ADASYN (random_state=5)
+		try:
+			X_train, y_train =  ros. fit_resample (X_train, y_train)
+
+		except:
+			pass
+
+		pred_model = train_model (np. concatenate ((y_train. reshape (-1,1), X_train), axis = 1), model, params, lag)
+		scores. append (test_model (X_test, y_test, pred_model, lag, model))
+
+	return (np. mean (np. array (scores), axis = 0), np. std (np. array (scores), axis = 0))
 
 #===========================================
 
@@ -134,9 +148,12 @@ def k_l_fold_cross_validation (data, model, lag, n_splits, block_size):
 
 	if model == "BAG":
 		models_params = generate_models ({'bootstrap': [False], 'n_estimators': [10, 50, 100, 200, 300], 'random_state': [5]})
+
 	elif model == "GB":
 		models_params = generate_models ({'learning_rate': [0.1, 0.2, 0.3, 0.4], 'n_estimators': [10, 50, 100], 'max_depth' : [5, 10, 50, 100]})
-	# models_params = generate_tuples (behavioral_predictors, [lag_max])
+
+	elif model == "KNN":
+		models_params = generate_models ({'n_neighbors':[3, 4, 5]})
 
 	elif model == "ada":
 		models_params = generate_models ({'n_estimators': [10, 50, 100, 500, 1000], 'learning_rate': [1.0, 0.9, 0.8]})
@@ -180,22 +197,26 @@ def k_l_fold_cross_validation (data, model, lag, n_splits, block_size):
 
 	# fing the best model parameters
 	for params in models_params:
-		models_results. append ([str (params)] + [[0, 0, 0]])
+		models_results. append ([str (params)] + [[0, 0, 0, 0]] + [[0, 0, 0, 0]])
 
 	# k_fold_cross_validation in each split
 	for split in splits:
 		for i in range (len (models_params)):
-			results = k_fold_cross_validation  (split, model = model, lag = lag, params = models_params [i], block_size = block_size)
+			results_mean, results_std = k_fold_cross_validation (split, model = model, lag = lag, params = models_params [i], block_size = block_size)
 			for l in range (3):
-			 	models_results[i][1][l] += results [l]
+				models_results[i][1][l] += results_mean [l] / n_splits
+				models_results[i][2][l] += results_std [l] / n_splits
 
 	# Get the best model parameters
-	best_model, best_index = get_max_of_list (models_results)
+	best_index = get_max_of_list (models_results)
 
+	std_errors = models_results [best_index][2]
+
+	mean_measures = models_results [best_index][1]
 	# Evaluate the best model on test data
-	pred_model = train_model (data, model, models_params [best_index], lag)
+	#pred_model = train_model (data, model, models_params [best_index], lag)
 
-	return str (models_params [best_index]), pred_model
+	return str (models_params [best_index]), mean_measures, std_errors
 
 #======================================================
 
@@ -226,19 +247,15 @@ def  test_model (X, Y, model, lag, model_type = "sickit"):
 		pred = discretize_preds (pred)
 		real = discretize_preds (real)
 
-	'''print (18 * "-")
-	print (real.dtype)
-	print (pred.dtype)
-	print (18 * "-")'''
-
 	recall_ 	= recall_score (real, pred, average = 'weighted')
 	precision_ 	= precision_score (real, pred, average = 'weighted')
 	fscore_ 	= f1_score (real, pred, average = 'weighted')
+
 
 	'''recall_ 	= recall_score (real, pred)
 	precision_ 	= precision_score (real, pred)
 	fscore_ 	= f1_score (real, pred)'''
 
-	accuray_ = accuracy_score (real, pred)
+	accuray_ = cohen_kappa_score (real, pred)
 
 	return [recall_, precision_, fscore_, accuray_]

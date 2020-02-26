@@ -12,26 +12,41 @@ from sklearn.neural_network import MLPClassifier
 
 from joblib import Parallel, delayed
 
-
-from fylearn.garules import MultimodalEvolutionaryClassifier
+'''from fylearn.garules import MultimodalEvolutionaryClassifier
 from fylearn.nfpc import FuzzyPatternClassifier
-from fylearn.fpt import FuzzyPatternTreeTopDownClassifier
+from fylearn.fpt import FuzzyPatternTreeTopDownClassifier'''
 
 # local files
-from src.feature_selection. reduction import manual_selection, generic_reduction, feature_selection_modalities
-#from clustering import *
+from src.feature_selection. reduction import manual_selection, generic_reduction
 from src.prediction.tools import *
 from src.prediction.training import *
-#from src.prediction.new_model import new_model
 
 # for imbalanced class
-from imblearn.over_sampling import RandomOverSampler,  SMOTE, ADASYN
+from imblearn.over_sampling import RandomOverSampler,  SMOTE, ADASYN, SMOTENC
 
 from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit, TimeSeriesSplit
-
+from sklearn.feature_selection import SelectFromModel
+from sklearn.model_selection import train_test_split
 
 import warnings
 warnings.filterwarnings("ignore")
+
+
+global_dict_models = {
+	"BAG": BaggingClassifier (),
+	"MLP":RandomForestClassifier (),
+	"SGD": SGDClassifier (),
+	"GB": GradientBoostingClassifier (),
+	"RF": RandomForestClassifier (),
+	"SVM": RandomForestClassifier (),
+	"FUZZY": RandomForestClassifier (),
+	"RIDGE": linear_model.Ridge (),
+	"LASSO": linear_model.Lasso (),
+	"baseline": DummyClassifier (),
+	"LREG": linear_model.LogisticRegression (),
+	"ada": AdaBoostClassifier (),
+	"KNN": KNeighborsClassifier ()
+	}
 
 #=================================================================================================================
 def train_pred_model (model, dm_method, train_data, target_column, lagged_names, lag, convers_type, find_params):
@@ -68,7 +83,7 @@ def train_pred_model (model, dm_method, train_data, target_column, lagged_names,
 	return pred_model, best_model_params
 
 #============================================================
-def predict_area (behavioral_variables, target_column, set_of_behavioral_predictors, model, lag, filename, find_params = False, method = "RFE", type = "hh"):
+def predict_area (behavioral_variables, target_column, set_of_behavioral_predictors, model, lag, filename, find_params = False, method = "None", type = "HH"):
 	"""
 		- target_column:
 		- set_of_behavioral_predictors:
@@ -78,107 +93,135 @@ def predict_area (behavioral_variables, target_column, set_of_behavioral_predict
 		- find_params: if TRUE, a k-fold-cross-validation  is used to find the parameters of the models, else using the previous one stored.
 		- method: the feature selection method. None for no feature selection, and rfe for recursive feature elimination.
 	"""
+	#print (target_column, "\n", 18*'-')
 
 	# load target data
 	if model in ["RIDGE", "LASSO"]:
-		y = pd. read_csv ("concat_time_series/bold_%s_data.csv"%str (type). lower (), sep = ';'). loc[:, [target_column]]
+		y = pd. read_csv ("concat_time_series/bold_%s_data.csv"%str (type). lower (), sep = ';'). loc[:, [target_column]]. values
 
 	else:
-		y = pd. read_csv ("concat_time_series/discr_bold_%s_data.csv"%str (type). lower (), sep = ';'). loc[:, [target_column]]
+		y = pd. read_csv ("concat_time_series/discr_bold_%s_data.csv"%str (type). lower (), sep = ';'). loc[:, [target_column]]. values
+
 
 	# Extract the selected features from features selection results
-	if os.path.exists ("results/selection/selection_%s.csv" %(type)):
-		selection_results = pd.read_csv ("results/selection/selection_%s.csv" %(type),  sep = ';', header = 0, na_filter = False, index_col=False)
+	'''if os.path.exists ("results/selection/selection_%s.csv" %(type)):
+		selection_results = pd.read_csv ("results/selection/selection_%s.csv" %(type),  sep = ';', header = 0, na_filter = False, index_col=False)'''
 
-	if find_params:
-		numb_test = 1
-	else:
-		numb_test = 1
 
 	# if the model the baseline (random), using multiple behavioral predictors has no effect
 	if model == "baseline":
 		set_of_behavioral_predictors = set_of_behavioral_predictors [0:1]
 
 
+	nb_test_obs = int (0.2 * len (behavioral_variables))
+	test_index = list (range (0, nb_test_obs))
+	#test_index =  range (int (4 * nb_test_obs), int (5 * nb_test_obs))
+	#train_index =  range (0, int (4 * nb_test_obs))
+
+	train_index = []
+	for i in range (len (behavioral_variables)):
+		if i not in test_index:
+			train_index. append (i)
+
+	'''print (min (test_index), max (test_index))
+	print (min (train_index), max (train_index))
+	exit (1)'''
+
+	X_train_all = behavioral_variables. iloc [train_index, :].values
+	X_test_all =  behavioral_variables. iloc [test_index, :].values
+
+	y_train = y [train_index, :]. copy ()
+	y_test =  y [test_index, :].  copy ()
+
+	#X_train_all, X_test_all, y_train, y_test = train_test_split (behavioral_variables. values, y, test_size=0.19, random_state=42)
+
+	#ros = RandomOverSampler(random_state=5)
+	ros = ADASYN ()
+	# Handling oversampling
+	try:
+		X_train_all, y_train =  ros. fit_resample (X_train_all, y_train)
+		X_test_all, y_test =  ros. fit_resample (X_test_all, y_test)
+
+	except:
+		print ("Data already balanced!")
+		pass
+
+	X_train_all = pd. DataFrame (X_train_all, columns = behavioral_variables. columns)
+	X_test_all = pd. DataFrame (X_test_all, columns = behavioral_variables. columns)
+
+	# A loop to test each set of predictive features
 	for behavioral_predictors in set_of_behavioral_predictors:
 		score = []
 		lagged_names = get_lagged_colnames (behavioral_predictors, lag)
 		selected_indices = [a for a in range (len (lagged_names))]
 
-		X = behavioral_variables. loc[:, lagged_names]
+		X_train = X_train_all. loc[:, lagged_names]. values
+		X_test = X_test_all. loc[:, lagged_names]. values
 
-		# Concatenate target and predictive features
-		all_data = np. concatenate ((y, X), axis = 1)
-
-		all_data = outlier_detection (all_data, alpha = 0.15)
-		#print (all_data. shape)
-
-		# Determine train and test data
-		nb_obs = int (all_data. shape [0] * (0.8))
-		# keep subjects just for test data
-		stratified_indexes  = [[range (nb_obs), range (nb_obs + 1, len (all_data))]]
-
-
+		'''print (X_train. shape)
+		print (X_test. shape)'''
 
 		# test multiple number of features for feature selection_
-		if model == "baseline" or method == "None":
-			method = "None"
-			set_k = [int (all_data. shape [1] - 1)]
+		if model == "baseline" or method in ["None", ""]:
+			set_k = [X_train. shape [1]]
 
-		#set_k = list (range (1, 12))
 		else:
-			set_k = [2]
+			#set_k = list (range (2, 20, 4))
+			set_k = [12, 16, 20]
 
 		for n_comp in set_k:
 			print ("%s K = %s ----------"%(method, n_comp))
 			score = []
 
-			if method == "None":
-				dm_method = "None"
+			if method in ["None", ""]:
+				dm_method = method
 			else:
 				dm_method = "%s_%s"%(method, str (n_comp))
 
-			if n_comp >= all_data. shape [1]:
-				break
-
-			#sss = ShuffleSplit (n_splits = 1, test_size = 0.2, random_state = 5)
-			#stratified_indexes = sss.split (all_data[:, 1:], all_data [:, 0:1])
-			for train_index, test_index in stratified_indexes:
-				train_data = all_data [train_index, :].copy ()
-				test_data = all_data [test_index, :]. copy ()
-
-				# normalization
-				min_max_scaler = preprocessing. MinMaxScaler ()
-				train_data [:,1:] = min_max_scaler. fit_transform (train_data [:,1:])
-				test_data [:,1:] = min_max_scaler. transform (test_data [:,1:])
+			if n_comp > X_train. shape [1]:
+				continue
 
 
-				# feature selection
-				if method != "None" and model != "baseline" and n_comp < (train_data. shape [1] - 1):
-					train_data_X, selected_indices, selector = generic_reduction (train_data[:, 1:], train_data[:, 0:1], method = method, n_comps = n_comp, estimator_name = "RF")
-					train_data = np. concatenate ((train_data[:, 0:1], train_data_X), axis = 1)
-					if method in ["PCA", "KPCA", "ICA"]:
-						test_data_X = selector. transform (test_data[:,1:])
-					else:
-						test_data_X = test_data[:, [int(a + 1) for a in selected_indices]]
-						#test_data_X = selector. predict (test_data[:,1:])
-					test_data = np. concatenate ((test_data[:, 0:1], test_data_X), axis = 1)
+			# feature selection
+			if method not in ["None", ""] and model != "baseline" and n_comp < (X_train. shape [1]):
+				X_train, selected_indices, selector = generic_reduction (X_train, y_train, method = method, n_comps = n_comp, estimator_name = "RF")
+				if method in ["PCA", "KPCA", "ICA", "TREE"]:
+					X_test = selector. transform (X_test)
 				else:
-					selected_indices = [a for a in range (len (lagged_names))]
+					X_test = X_test[:, [int(a) for a in selected_indices]]
 
-				# Naive random and  ADASYN() over-sampling
-				#ros = RandomOverSampler(random_state=5)
-				#X_train, y_train =  RandomOverSampler().fit_resample(train_data [:,1:], train_data [:,0])
-				X_test = test_data [:,1:]
-				y_test = test_data [:,0]
-				#X_test, y_test =  RandomOverSampler().fit_resample(X_test, y_test)
 
-				# train the model and extract the best model parameters from a  k_fold_cross_validation
-				#train_data = np. concatenate ((y_train. reshape ((-1,1)), X_train), axis = 1)
-				pred_model, best_model_params = train_pred_model (model, method, train_data, target_column, lagged_names, lag, type, find_params)
+			elif method == "None" and model != "baseline":
+				selected_indices = []
+				if model == "KNN":
+					clf = global_dict_models ["RF"]
+				else:
+					clf = global_dict_models [model]
+				clf = clf.fit (X_train, y_train)
+				select_model = SelectFromModel (clf, prefit = True)
+				support = select_model. get_support()
 
-				# Compute the score on test data
-				score. append (test_model (X_test, y_test, pred_model, lag, model))
+				for i in range (len (support)):
+					if support [i]:
+						selected_indices. append (i)
+
+				# transform data
+				X_train = select_model.transform (X_train)
+				X_test = select_model.transform (X_test)
+
+
+			elif method == "":
+				selected_indices = [a for a in range (len (lagged_names))]
+
+
+			# train the model and extract the best model parameters from the  k_fold_cross_validation experiment
+			train_data = np. concatenate ((y_train. reshape ((-1,1)), X_train), axis = 1)
+			pred_model, best_model_params = train_pred_model (model, method, train_data, target_column, lagged_names, lag, type, find_params)
+
+			evaluations = test_model (X_test, y_test, pred_model, lag, model)
+
+			# Compute the score on test data
+			score. append (evaluations)
 
 
 			row = [target_column, dm_method, lag, best_model_params,\
@@ -188,11 +231,11 @@ def predict_area (behavioral_variables, target_column, set_of_behavioral_predict
 			write_line (filename, row, mode = "a")
 
 #=========================================================================
-def predict_all (subjects, _regions, lag, k, model, remove, _find_params):
+def predict_all (_regions, lag, k, model, remove, _find_params):
 
 	print ("-- MODEL :", model)
 	colnames = ["region", "dm_method", "lag", "models_params", "predictors_dict", "predictors_list", "selected_predictors",
-				"recall. mean", "precision. mean", "fscore. mean", "accuracy. mean", "recall. std", "precision. std", "fscore. std", "accuracy. std"]
+				"recall. mean", "precision. mean", "fscore. mean", "kappa. mean", "recall. std", "precision. std", "fscore. std", "kappa. std"]
 
 	if _find_params:
 		filename_hh = "results/models_params/%s_HH.csv"%(model)
@@ -217,19 +260,29 @@ def predict_all (subjects, _regions, lag, k, model, remove, _find_params):
 	behavioral_variables_hh = pd. read_csv ("concat_time_series/behavioral_hh_data.csv", sep = ';')
 	behavioral_variables_hr = pd. read_csv ("concat_time_series/behavioral_hr_data.csv", sep = ';')
 
-	if behavioral_variables_hh.isnull().any().any() or behavioral_variables_hr.isnull().any().any():
+
+	'''if behavioral_variables_hh. isnull (). any (). any () or behavioral_variables_hr. isnull (). any (). any ():
 		print (" ERROR: data contains nan!")
-		exit (1)
+		#exit (1)
+
+	behavioral_variables_hh. fillna (0, inplace = True)
+	behavioral_variables_hr. fillna (0, inplace = True)
+
+	behavioral_variables_hh [behavioral_variables_hh < 0.00001] = 0
+	behavioral_variables_hr [behavioral_variables_hr < 0.00001] = 0'''
+
+	if behavioral_variables_hh. isnull (). any (). any () or behavioral_variables_hr. isnull (). any (). any ():
+		print (" ERROR: data still contains nan after nan values elimination!")
 
 	# Predict HH  and HR conversations separetely
-	Parallel (n_jobs=6) (delayed (predict_area)
-	(behavioral_variables_hh, target_column, manual_selection (target_column), model = model, lag = lag, filename = filename_hh, find_params = _find_params)
+	Parallel (n_jobs = 3) (delayed (predict_area)
+	(behavioral_variables_hh, target_column, manual_selection (target_column), model = model, lag = lag, filename = filename_hh, find_params = _find_params, type = "HH")
 									for target_column in _regions)
 
 
-	Parallel (n_jobs=6) (delayed (predict_area)
-	(behavioral_variables_hr, target_column, manual_selection (target_column), model = model, lag = lag, filename = filename_hr, find_params = _find_params)
-									for target_column in _regions)
+	'''Parallel (n_jobs = 3) (delayed (predict_area)
+	(behavioral_variables_hr, target_column, manual_selection (target_column), model = model, lag = lag, filename = filename_hr, find_params = _find_params, type = "HR")
+									for target_column in _regions)'''
 
 if __name__ == '__main__':
 	print ("test")

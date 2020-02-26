@@ -1,15 +1,16 @@
-# coding: utf8
-import sys, os, inspect
+"""
+	Author: Youssef Hmamouche
+	Year: 2019
+	Using extracted feature detected (Openface) and eyetracking files to generate extra features
+"""
+
+import sys, os, inspect, argparse, importlib
 import numpy as np
 import pandas as pd
-from imutils import face_utils
-import matplotlib. pyplot as plt
-import cv2
-import dlib
+
+import cv2, dlib
 from scipy.stats import mode as sc_mode
-import argparse
-import utils.tools as ts
-import importlib
+from imutils import face_utils
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -19,7 +20,6 @@ resampling_spec = importlib.util.spec_from_file_location("resampling", "%s/src/r
 resampling = importlib.util.module_from_spec(resampling_spec)
 resampling_spec.loader.exec_module(resampling)
 
-
 #===========================================================
 
 def face_land_marks (image, predictor, face):
@@ -28,7 +28,6 @@ def face_land_marks (image, predictor, face):
 	return shape
 
 #===========================================================#
-
 def get_minmax (frame, land_marks, item_name):
 
 	if item_name == "face":
@@ -47,7 +46,7 @@ def get_minmax (frame, land_marks, item_name):
 	return xmin, xmax, ymin, ymax
 
 #===========================================================#
-
+# extract the location of an item as rectangle using ladmarks and the image
 def landmark_to_rect (frame, land_marks, item_name, scale = 50.0):
 
 	xmin, xmax, ymin, ymax = get_minmax (frame, land_marks, item_name)
@@ -75,7 +74,6 @@ def landmark_to_rect (frame, land_marks, item_name, scale = 50.0):
 		y = y - int (0.333 * h)
 		h = h + int (0.333 * h)
 
-		#cv2.rectangle(frame, (x, y, w, h), (0,165,255), 2)
 		return (x, y, w, h)
 
 	else:
@@ -88,12 +86,9 @@ def landmark_to_rect (frame, land_marks, item_name, scale = 50.0):
 	y = ymin[1] - yscale
 	h = ymax [1] - y + yscale
 
-	#cv2.rectangle(frame, (x, y, w, h), (0,165,255), 2)
-
 	return (x, y, w, h)
 
 #=================================================
-
 def plot_landMarks (image, shape):
 	l = 0
 	colors_names = ["red", "pink", "pink", "blue", "blue", "orange","black"]
@@ -104,11 +99,7 @@ def plot_landMarks (image, shape):
 			cv2.circle (image, (x, y), 3, colors[-1], -1)
 		l = l + 1
 
-
-
-
 #==================================================
-
 def isin_dlib_face (face, x, y):
 	if x >= face.left() and x <= face.right() and y >= face.top() and y <= face.bottom():
 		return True
@@ -116,7 +107,6 @@ def isin_dlib_face (face, x, y):
 		return False
 
 #==================================================
-
 def isin_rect (rect, x, y):
 	if x >= rect[0] and x <= rect[0] + rect[2] and y >= rect[1] and y <= rect[1] + rect[3]:
 		return True
@@ -149,24 +139,28 @@ if __name__ == '__main__':
 	conversation_name = args. video.split ('/')[-1]. split ('.')[0]
 	out_file = args. out_dir + conversation_name
 
-	'''if os.path.isfile ("%s.pkl"%out_file):
+	if os.path.isfile ("%s.pkl"%out_file):
 		test_df = pd.read_pickle ("%s.pkl"%out_file)
 		if test_df. shape [0] == 50:
 			print ("Conversation already processed!")
-			exit (1)'''
+			exit (1)
 
-	# hyper-parameters for bounding boxes shape
-	frame_window = 10
-
-	# starting video streaming
+	# read the video
 	video_capture = cv2.VideoCapture(args.video)
 
-	# Frames frequence : fps frame per seconde
+	#  Video parameters
+	frames_nb = int (video_capture. get (7))
 	fps = video_capture.get (cv2.CAP_PROP_FPS)
+	frame_width = int( video_capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+	frame_height = int( video_capture.get( cv2.CAP_PROP_FRAME_HEIGHT))
 
-	# Number of Frames
-	frames_nb = int (video_capture.get (7))
+	# create output video if the save argument is specified
+	if args. save:
+		fourcc = cv2.VideoWriter_fourcc(*'XVID')
+		out = cv2.VideoWriter (args.out_dir + "/" + conversation_name + ".avi", fourcc, fps, (frame_width, frame_height))
 
+	# If demo, we use eyetracking and openface csv files as input,
+	# else, we find them automatically based on the name of the video
 	if args. demo:
 		eye_tracking_file = args. eyetracking
 		openface_file = args. facial_features
@@ -174,41 +168,34 @@ if __name__ == '__main__':
 		eye_tracking_file = "time_series/%s/gaze_coordinates_ts/%s.pkl"%(subject, conversation_name)
 		openface_file = "time_series/%s/facial_features_ts/%s/%s.csv"%(subject, conversation_name, conversation_name)
 
+	# read eyetracking and openface csv files
 	eye_tracking_data = pd. read_pickle (eye_tracking_file) #. values. astype (float)
-	#saccades = pd. read_pickle (eye_tracking_file) ["saccades"]. values. astype (float)
 	saccades = eye_tracking_data . loc [:, ["Time (s)","saccades"]]. values. astype (float)
 	eye_tracking_data = eye_tracking_data . loc [:, ["Time (s)", "x", "y"]]. values. astype (float)
-
 	openface_data = pd. read_csv (openface_file, sep = ',', header = 0)
 
-	""" Construct the index of the video stream """
+	# Construct the index of the video stream
 	video_index = [1.0 / fps ]
 	for i in range (1, frames_nb):
 	    video_index. append (1.0 / 30.0 + video_index [i - 1])
 
-	""" resample gaze coordinates to the video frequency """
+	# resample gaze coordinates to the video frequency
 	gaze_coordiantes = resampling. resample_ts (eye_tracking_data, video_index, mode = "mean")
 
+	# extract time index and 2D landmarks columns from openface data
 	cols = [" timestamp", " success"]
 	for i in range (68):
 		cols = cols + [" x_%d"%i, " y_%d"%i]
 
 	openface_data = openface_data [cols]. values
 
-	frame_width = int( video_capture.get(cv2.CAP_PROP_FRAME_WIDTH))
-	frame_height = int( video_capture.get( cv2.CAP_PROP_FRAME_HEIGHT))
 
-
-	if args. save:
-		fourcc = cv2.VideoWriter_fourcc(*'XVID')
-		out = cv2.VideoWriter (args.out_dir + "/" + conversation_name + ".avi", fourcc, fps, (frame_width, frame_height))
-
+	# start loop over video stream
 	nb_frames = 0
 	face_time_series = []
 	current_time = 0
 	lds = []
 
-	""" read the video, and compute the number of time the subject is looking in the face, eye or mouth of the interlocutor """
 	while True:
 		ret, bgr_image = video_capture.read()
 		current_time += 1.0 / float (fps)
@@ -219,6 +206,7 @@ if __name__ == '__main__':
 		row = [current_time, 0, 0, 0]
 		success = openface_data [nb_frames, 1]
 
+		# check first if landmarks detection has not been failed
 		if success:
 			lds = openface_data [nb_frames, 2: ]
 			landmarks = []
@@ -231,24 +219,25 @@ if __name__ == '__main__':
 			right_eye = landmark_to_rect (bgr_image, landmarks, "right_eye")
 			left_eye = landmark_to_rect (bgr_image, landmarks, "left_eye")
 
-			for x, y in landmarks:
-				cv2.circle (bgr_image, (x, y), 2, (255, 0, 0), -1)
+			#for x, y in landmarks:
+				#cv2.circle (bgr_image, (x, y), 2, (255, 0, 0), -1)
 
 			# rescale coordinate according the screen of the experience
 			x = (gaze_coordiantes [nb_frames, 1]  / float (1279)) * frame_width   #1279
 			y = (gaze_coordiantes [nb_frames, 2] / float (1023)) * frame_height   #1023
+
 
 			# check if eyetracking coordinates are not nan
 			if not np.isnan (x) and not np.isnan (y):
 				x = int (x)
 				y = int (y)
 
-				#plot eyetracking point
-				#bgr_image = cv2.resize (bgr_image, (1279, 1023))
+				# plot eyetracking point
+				# bgr_image = cv2.resize (bgr_image, (1279, 1023))
 				cv2.circle(bgr_image, (x, y), 3, (0,0,255), -1)
-				#bgr_image = cv2.resize (bgr_image, (frame_width, frame_height))
 
-				# fill the time series
+
+				# Append observations to time series
 				if isin_rect (face, x, y):
 					row [1] = 1
 					if isin_rect (mouth, x, y):
@@ -273,25 +262,26 @@ if __name__ == '__main__':
 
 	if args.save:
 		out. release ()
-	#exit (1)
-	""" compute the index of the BOLD signal frequency """
-	physio_index = [0.6]
+
+	# compute the index of the BOLD signal frequency
+	# TODO: make the expected frequency as input argument
+	physio_index = [0.6025]
 	for i in range (1, 50):
 		physio_index. append (1.205 + physio_index [i - 1])
 
-	""" resample data according the BOLD signal frequency """
-	# resample the gaze coordiante
-	saccades = resampling. resample_ts (saccades, physio_index, mode = "binary")[:, 1:]
+	# resampling data according the BOLD signal frequency
+	saccades = resampling. resample_ts (saccades, physio_index, mode = "sum")[:, 1:]
 	coordinates_resampled = resampling. resample_ts (eye_tracking_data, physio_index, mode = "mean")
 
-	#compute and resample the gradient of the gaze coordinates
+	# compute and resample the gradient of the gaze coordinates
 	coordinates_gradient = np. gradient (eye_tracking_data [:,1:3], eye_tracking_data [:,0], axis = 0)
 	coordinates_gradient = np. concatenate ((np. reshape (eye_tracking_data [:,0], (-1, 1)), coordinates_gradient), axis = 1)
 	coordinates_gradient = resampling. resample_ts (coordinates_gradient, physio_index, mode = "mean")[:, 1:]
 
-	# resample face-time-series
-	face_time_series = resampling. resample_ts (face_time_series, physio_index, mode = "binary")[:, 1:]
+	# resample facial-time-series
+	face_time_series = resampling. resample_ts (face_time_series, physio_index, mode = "sum")[:, 1:]
 
-	""" Concatenate all columns in one dataframe """
-	output_time_series = pd.DataFrame (np. concatenate ((coordinates_resampled, coordinates_gradient, saccades, face_time_series), axis = 1), columns = ["Time (s)", "x", "y", "Vx", "Vy", "saccades", "Face", "Mouth", "Eyes"])
+	# Concatenate all columns in one dataframe
+	output_time_series = pd.DataFrame (np. concatenate ((coordinates_resampled, coordinates_gradient, saccades, face_time_series), axis = 1),
+										columns = ["Time (s)", "x", "y", "Vx", "Vy", "saccades", "Face", "Mouth", "Eyes"])
 	output_time_series.to_pickle (out_file + ".pkl")

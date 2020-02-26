@@ -26,7 +26,7 @@ def fit_lstm (X, Y, lag, params) :
     nb_epochs = params ['epochs']
     nb_neurons = params ['neurons']
 
-    look_back = 3
+    look_back = 4
     X_reshaped = X.reshape (X. shape[0], look_back, int (X.shape[1] / look_back))
 
     model = Sequential()
@@ -43,7 +43,7 @@ def fit_lstm (X, Y, lag, params) :
 
 def lstm_predict (X, model, lag):
 
-    look_back = 3
+    look_back = 4
     X_reshaped = X.reshape(X.shape[0], look_back, int (X.shape[1] / look_back))
     preds = model. predict (X_reshaped, batch_size = 1). reshape (-1)
     for i in range (len (preds)):

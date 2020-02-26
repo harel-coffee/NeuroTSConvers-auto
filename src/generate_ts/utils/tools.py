@@ -128,9 +128,8 @@ def get_ipu (tier, value):
 		if label in ["#", "", " ", "***", "*"] :
 			continue
 		else:
-			if (stop - start) >= 0.5:
-				x. append ([start, stop])
-				y. append (value)
+			x. append ([start, stop])
+			y. append (value)
 
 	return x, y
 
@@ -150,6 +149,26 @@ def get_overlap (tier_left, tier_right, value = 1.0):
 				continue
 			if  max (start_l, start_r) < min (stop_l, stop_r):
 				x. append ([max (start_l, start_r), min (stop_l, stop_r)])
+
+	return x
+
+#======================================================================
+def get_joint_laugh (tier_left, tier_right, list_of_tokens):
+
+	x = []
+
+	for sppasOb_l  in tier_left:
+		label_l, [start_l, stop_l], [radius_l, radius_l] = get_interval (sppasOb_l)
+		if label_l in ["#", "", " ", "***", "*"]:
+			continue
+
+		for sppasOb_r  in tier_right:
+			label_r, [start_r, stop_r], [radius_r, radius_r] = get_interval (sppasOb_r)
+			if label_r in ["#", "", " ", "***", "*"]:
+				continue
+			if label_r in list_of_tokens and label_l in list_of_tokens:
+				if  max (start_l, start_r) < min (stop_l, stop_r):
+					x. append ([max (start_l, start_r), min (stop_l, stop_r)])
 
 	return x
 #======================================================================
@@ -205,7 +224,7 @@ def richess_lexicale (phrase, nlp,  method = "meth1"):
 
 	doc = nlp (phrase)
 
-	if method == "meth1":
+	if method == "meth2":
 		nb_adj = 0
 		nb_adv = 0
 		total_tokens = 0
@@ -224,7 +243,7 @@ def richess_lexicale (phrase, nlp,  method = "meth1"):
 
 		return float (nb_adv + nb_adj) / total_tokens
 
-	elif method == "meth2":
+	elif method == "meth1":
 		token_without_punct = []
 
 		for token in doc:
@@ -245,7 +264,7 @@ def richess_lexicale (phrase, nlp,  method = "meth1"):
 		exit (1)
 
 #===========================================================
-# Generate time series  (two vectors) corresponding to the richness text (using previous function)
+# Generate time series  (two vectors) corresponding to time and  the associated  lexical richness
 def generate_RL_ts (tier, nlp, method = "meth1"):
 	x = []
 	y = []
@@ -254,11 +273,19 @@ def generate_RL_ts (tier, nlp, method = "meth1"):
 
 		label, [start, stop], [start_r, stop_r] = get_interval (sppasOb)
 
-		x. append (stop)
+		i = (start + stop) / 2.0
 		if label in ["#", "", " ", "***", "*"] :
-			y. append (0)
+			lexical_rich = 0
+
 		else:
-			y. append (richess_lexicale (label, nlp = nlp, method = method))
+			lexical_rich = richess_lexicale (label, nlp = nlp, method = method)
+
+		while (i < stop):
+			x. append (i)
+			y. append (lexical_rich)
+			i = i + ((start + stop) / 10.0)
+
+
 	return x, y
 
 
@@ -271,22 +298,26 @@ def emotion_ts_from_text (tier, nlp):
 	y = []
 	z = []
 
-	#tb = Blobber(pos_tagger = PatternTagger(), analyzer = PatternAnalyzer())
-
 	for sppasOb  in tier:
 
 		label, [start, stop], [start_r, stop_r] = get_interval (sppasOb)
 
-		x. append ((start + stop) / 2.0)
+		i = (start + stop) / 2.0
 		if label in ["#", "", " ", "***", "*"] :
-			y. append (0)
-			z. append (0)
+			polarity = 0
+			subjectivity = 0
+
 		else:
-			#bob = tb (label)
-			#polarity_and_sunjectivity = bob.sentiment
 			polarity_and_sunjectivity = sentiment (label)
-			y. append (polarity_and_sunjectivity[0])
-			z. append (polarity_and_sunjectivity[1])
+			polarity = polarity_and_sunjectivity[0]
+			subjectivity = polarity_and_sunjectivity[1]
+
+		while (i < stop):
+			x. append (i)
+			y. append (polarity)
+			z. append (subjectivity)
+			i = i + ((start + stop) / 10.0)
+
 	return x, y, z
 
 #===================================================
@@ -329,6 +360,23 @@ def get_durations (tier, list_of_tokens):
 			x. append ([start, stop])
 
 	return x
+
+#====================================================
+def get_items_existence (tier, list_of_tokens):
+
+	x = []
+	y = []
+	for sppasOb  in tier:
+		label, [start, stop], [start_r, stop_r] = get_interval (sppasOb)
+
+		x. append ((start + stop) / 2.0)
+
+		if label in list_of_tokens:
+			y. append (1)
+		else:
+			y. append (0)
+
+	return [x, y]
 
 #====================================================
 # Get ratios of items like discourse markers,

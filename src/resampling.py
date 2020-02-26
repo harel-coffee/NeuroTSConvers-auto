@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import scipy.stats as sc
 
 #========================================
 def compute_energy (x, rotation = False):
@@ -18,8 +19,9 @@ def compute_energy (x, rotation = False):
         if rotation:
             vect = [math. radians (a) for a in x[:,i]]
         else:
-            # convert pixel to m]
-            vect = [a * 0.0002645833  for a in x[:,i]]
+            # convert pixel to mm
+            #vect = [a * 0.0002645833  for a in x[:,i]]
+            vect = [a * 0.2645833  for a in x[:,i]]
 
         k_energy += np. sum (np. square (np. diff (vect)))
 
@@ -29,17 +31,19 @@ def compute_energy (x, rotation = False):
 def regroupe_data (list_, mode):
     """
         reducing a list of lists into one list by means of
-        mean, mode, max, or binary
+        mean, sum, std, mode, max, or binary
     """
 
     if mode == "mean":
         return np.nanmean (list_, axis=0). tolist ()
+    elif mode == "sum":
+        return np. sum (list_, axis=0). tolist ()
     elif mode == "std":
         return np.std (list_, axis=0). tolist ()
     elif mode == "max":
         return np.nanmax (list_, axis=0). tolist ()
     elif mode == "mode":
-        return sc_mode (list_, axis=0, nan_policy = 'omit')[0][0]. tolist ()
+        return sc.mode (list_, axis=0, nan_policy = 'omit')[0][0]. tolist ()
     elif mode == "binary":
         res = np.nanmean (list_, axis=0). tolist ()
         for i in range (len (res)):
