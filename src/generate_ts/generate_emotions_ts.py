@@ -1,42 +1,39 @@
 # coding: utf8
-
 import numpy as np
 import pandas as pd
-#import seaborn
 
 import matplotlib. pyplot as plt
-import cv2
-import dlib
-import sys
-import os
-
+import cv2, dlib, sys, os, inspect, argparse
 
 stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w') # hide keras messages
+
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+
+
 from keras.models import load_model
 sys.stderr = stderr
 
-from utils.face_classification.src.utils.datasets import get_labels
-from utils.face_classification.src.utils.inference import draw_text
-#from utils.face_classification.src.utils.inference import draw_bounding_box
-from utils.face_classification.src.utils.inference import apply_offsets
-from utils.face_classification.src.utils.preprocessor import preprocess_input
 
-import argparse
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+maindir = os.path.dirname(parentdir)
+
+sys.path.insert(3,maindir)
+
+from src.utils.face_classification.src.utils.datasets import get_labels
+from src.utils.face_classification.src.utils.inference import draw_text
+from src.utils.face_classification.src.utils.inference import draw_bounding_box
+from src.utils.face_classification.src.utils.inference import apply_offsets
+from src.utils.face_classification.src.utils.preprocessor import preprocess_input
 
 import utils.tools as ts
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
 colors = ["black", "darkblue", "brown", "red", "slategrey", "darkorange", "grey","blue", "indigo", "darkgreen"]
 
 #==================================================
-
-def usage():
-	print ("execute the script with -h for usage.")
-
-#==================================================
-
 if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser()
@@ -50,6 +47,8 @@ if __name__ == '__main__':
 	emotion_model_path = 'src/utils/face_classification/trained_models/fer2013_mini_XCEPTION.119-0.65.hdf5'
 	emotion_labels = get_labels('fer2013')
 
+	face_cascade = cv2.CascadeClassifier(detection_model_path)
+
 	if args. out_dir == 'None':
 	    usage ()
 	    exit ()
@@ -61,15 +60,17 @@ if __name__ == '__main__':
 	conversation_name = args. video.split ('/')[-1]. split ('.')[0]
 	out_file = args. out_dir + conversation_name
 
-	if os.path.isfile (out_file + ".pkl") and os.path.isfile (out_file + ".png"):
-	    exit (1)
+	print (conversation_name)
+
+	if os.path.isfile (out_file + ".pkl") and pd.read_pickle  (out_file + ".pkl"). shape [0] > 0:# and os.path.isfile (out_file + ".png"):
+		print ("files already exists")
+		exit (1)
 
 	# hyper-parameters for bounding boxes shape
-	frame_window = 10
 	emotion_offsets = (20, 40)
 
 	# loading models
-	face_detector = dlib.get_frontal_face_detector()
+	#face_detector = dlib.get_frontal_face_detector()
 	emotion_classifier = load_model(emotion_model_path, compile=False)
 
 	# getting input model shapes for inference
@@ -85,9 +86,6 @@ if __name__ == '__main__':
 	fps = video_capture.get(cv2.CAP_PROP_FPS)
 	length = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
 
-	'''subject = args. video.split ('/')[2]
-	eye_tracking_file = "time_series/%s/eye_ts/%s.pkl"%(subject, conversation_name)
-	eye_tracking_data = pd. read_pickle (eye_tracking_file). values'''
 
 	emotions_states = {'angry': 0, 'disgust':0, 'fear':0, 'happy':0,'sad':0, 'surprise':0, 'neutral':0}
 	labels = ['angry', 'disgust', 'fear', 'happy','sad', 'surprise', 'neutral']
@@ -108,23 +106,30 @@ if __name__ == '__main__':
 	j = 0
 	while True:
 		ret, bgr_image = video_capture.read()
+		ret, bgr_image = video_capture.read()
+		ret, bgr_image = video_capture.read()
+		ret, bgr_image = video_capture.read()
+		ret, bgr_image = video_capture.read()
 
 		if ret == False:
 		    break
 
 		gray_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
 		rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
-		faces = face_detector (gray_image, 1)
+		#faces = face_detector (gray_image, 1)
+
+		faces = face_cascade.detectMultiScale(gray_image, 1.1)
 
 		# We suppose we have at most on face in each image
 		if len (faces) > 0:
 			face_cordinates = faces[0]
-			x = face_cordinates.left()
-			y = face_cordinates.top() #could be face.bottom() - not sure
-			w = face_cordinates.right() - face_cordinates.left()
-			h = face_cordinates.bottom() - face_cordinates.top()
+			face = faces[0]
 
-			face = (x,y,w,h)
+			#x = face_cordinates.left()
+			#y = face_cordinates.top() #could be face.bottom() - not sure
+			#w = face_cordinates.right() - face_cordinates.left()
+			#h = face_cordinates.bottom() - face_cordinates.top()
+			#face = (x,y,w,h)
 
 			x1, x2, y1, y2 = apply_offsets(face, emotion_offsets)
 			gray_face = gray_image[y1:y2, x1:x2]
@@ -142,58 +147,60 @@ if __name__ == '__main__':
 			emotion_label_arg = np.argmax(emotion_prediction)
 			emotion_text = emotion_labels[emotion_label_arg]
 
-			'''if emotion_text in emotions_states. keys ():
-				emotions_states [emotion_text] = emotion_probability
-			else:
-				print ("Error! " + str (emotion_text) + " not in labels!")
-				exit (1)'''
+			#if emotion_text in emotions_states. keys ():
+				#emotions_states [emotion_text] = emotion_probability
+			#else:
+				#print ("Error! " + str (emotion_text) + " not in labels!")
+				#exit (1)
 
 			#set_of_emotions. append ([emotion_text, emotion_probability])
 			set_of_emotions[emotion_text] = max (emotion_probability, set_of_emotions[emotion_text])
 
-		current_time += 1.0 / fps
+		current_time += 5.0 / fps
 
 		if j >= 50:
 			break
 		if current_time >= index [j]:
 			time_series. append ([index [j]] + [set_of_emotions[emotion] for emotion in labels])
 			set_of_emotions = emotions_states. copy ()
-			#print ([index [j]] + [set_of_emotions[emotion] for emotion in labels])
 			j += 1
 
+		#if args. show:
+			#draw_bounding_box(face, rgb_image, color)
+			#cv2.circle(rgb_image, (int (eye_tracking_data[nb_frames, 1]), int (eye_tracking_data[nb_frames, 2])), 30, (0,0,255), -1)
+
 		if args. show:
+			if emotion_text == 'angry':
+				color = emotion_probability * np.asarray((255, 0, 0))
+			elif emotion_text == 'sad':
+				color = emotion_probability * np.asarray((0, 0, 255))
+			elif emotion_text == 'happy':
+				color = emotion_probability * np.asarray((255, 255, 0))
+			elif emotion_text == 'surprise':
+				color = emotion_probability * np.asarray((0, 255, 255))
+			else:
+				color = emotion_probability * np.asarray((0, 255, 0))
+
+			color = color.astype(int)
+			color = color.tolist()
+
+			#cv2.rectangle(rgb_image, face, (0,165,255), 2)
 			draw_bounding_box(face, rgb_image, color)
-			cv2.circle(rgb_image, (int (eye_tracking_data[nb_frames, 1]), int (eye_tracking_data[nb_frames, 2])), 30, (0,0,255), -1)
 
-		if emotion_text == 'angry':
-			color = emotion_probability * np.asarray((255, 0, 0))
-		elif emotion_text == 'sad':
-			color = emotion_probability * np.asarray((0, 0, 255))
-		elif emotion_text == 'happy':
-			color = emotion_probability * np.asarray((255, 255, 0))
-		elif emotion_text == 'surprise':
-			color = emotion_probability * np.asarray((0, 255, 255))
-		else:
-			color = emotion_probability * np.asarray((0, 255, 0))
-
-		color = color.astype(int)
-		color = color.tolist()
-
-		draw_text(face, rgb_image, emotion_text, color, 0, -45, 1, 1)
-
-		bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
-		cv2.imshow('window_frame', bgr_image)
+			draw_text(face, rgb_image, emotion_text, color, 0, -45, 1, 1)
+			bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+			cv2.imshow('window_frame', bgr_image)
 
 		if cv2.waitKey(30) & 0xFF == ord('q'):
 			break
 
 		#nb_frames += 1
 
-
 	if j < 50:
 		time_series. append ([index[j]] + [set_of_emotions[emotion] for emotion in labels])
 
-	#df = pd.DataFrame (time_series, columns = columns)
+	df = pd.DataFrame (time_series, columns = columns)
+	df. to_pickle (out_file + '.pkl')
 	#print (df)
 	#exit (1)
 	#df. to_pickle (out_file + '.pkl')

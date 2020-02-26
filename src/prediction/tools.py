@@ -9,11 +9,13 @@ from ast import literal_eval
 from sklearn.decomposition import PCA, IncrementalPCA, KernelPCA
 from sklearn.ensemble import IsolationForest
 
+from sklearn.cluster import KMeans
 
-
+#===========================================================
 def outlier_detection (data_, alpha = 0.1):
 	data = data_.copy ()
-	outlier_model = IsolationForest (n_estimators = 100, contamination = alpha, behaviour = 'new')
+
+	outlier_model = IsolationForest (n_estimators = 100, contamination = alpha)
 	outlier_model. fit (data)
 	scores = outlier_model. predict (data)
 
@@ -23,7 +25,7 @@ def outlier_detection (data_, alpha = 0.1):
 	        delt. append (m)
 
 	data = np. delete (data, delt, axis = 0)
-	return data
+	return data, delt
 #===========================================================
 def extract_models_params_from_crossv (crossv_results_filename, brain_area, features, reduction_method):
 	"""
@@ -31,19 +33,27 @@ def extract_models_params_from_crossv (crossv_results_filename, brain_area, feat
 
 		- crossv_results_filename: the filename of the model where the results are saved.
 		- brain_area: brain region name
-		- features: the set of predictive features
+		- features: the set of predictive features (lagged)
 		- dictionary containing the parameter of the model
 	"""
 
 	features_exist_in_models_params = False
-	models_params = pd.read_csv (crossv_results_filename, sep = ';', header = 0, na_filter = False, index_col = False)
-	models_params = models_params. loc [(models_params ["region"] ==  brain_area)]
+	models_params_ = pd.read_csv (crossv_results_filename, sep = ';', header = 0, na_filter = False, index_col = False)
+	models_params = models_params_. loc [(models_params_ ["region"] ==  brain_area)]
+
+	# if the brain_area was not processed with cross-validation
+	if models_params. shape [0] == 0:
+		best_model_params_index = models_params_ ["fscore. mean"].idxmax ()
+		best_model_params = models_params_. loc [best_model_params_index, "models_params"]
+		std_errors =  models_params. loc [best_model_params_index, ["recall. std",  "precision. std",  "fscore. std",  "kappa. std"]]
+		return literal_eval (best_model_params), std_errorss
 
 	# find the models_paras associated to each predictors_list with dimension reduction method
 	for i in list (models_params. index):
 		if set (literal_eval(models_params. loc [i, "predictors_list"])) == set (features) and models_params. loc [i, "dm_method"] == reduction_method:
 			features_exist_in_models_params = True
-			best_model_params = models_params. ix [i, "models_params"]
+			best_model_params_index = i
+			#best_model_params = models_params. loc [i, "models_params"]
 			break
 
 	# find the models_paras associated to each predictors_list without dimension reduction method
@@ -51,15 +61,19 @@ def extract_models_params_from_crossv (crossv_results_filename, brain_area, feat
 		for i in list (models_params. index):
 			if set (literal_eval(models_params. loc [i, "predictors_list"])) == set (features):
 				features_exist_in_models_params = True
-				best_model_params = models_params. ix [i, "models_params"]
+				best_model_params_index = i
+				#best_model_params = models_params. loc [i, "models_params"]
 				break
 
 	# else, choose the best model_params without considering features
 	if not features_exist_in_models_params:
 		best_model_params_index = models_params ["fscore. mean"].idxmax ()
-		best_model_params = models_params. ix [best_model_params_index, "models_params"]
 
-	return literal_eval (best_model_params)
+
+	best_model_params = models_params. loc [best_model_params_index, "models_params"]
+	std_errors =  models_params. loc [best_model_params_index, ["recall. std",  "precision. std",  "fscore. std",  "kappa. std"]]. values
+
+	return literal_eval (best_model_params), std_errors. tolist ()
 
 #===========================================================
 def features_in_select_results (selec_results, region, features):
@@ -121,16 +135,20 @@ def get_behavioral_data (subject, convers, external_predictors):
 
 	for filename, columns in zip (external_filenames, external_columns):
 
+		read_file = pd.read_pickle (filename)[columns]. values
+		if read_file. shape[0] < 50:
+			print ("Error in %s %s %s"%(subject, convers, external_predictors))
+			exit (1)
 		if external_data. size == 0:
 			if os. path. exists (filename):
 				try:
-					external_data = pd.read_pickle (filename)[columns]. values
+					external_data = read_file
 				except:
 					continue
 		else:
 			if os. path. exists (filename):
 				try:
-					external_data = np. concatenate ((external_data, pd.read_pickle (filename)[columns]. values), axis = 1)
+					external_data = np. concatenate ((external_data, read_file), axis = 1)
 				except:
 					continue
 
@@ -161,18 +179,22 @@ def train_test_split (data, test_size = 0.2):
 
 #============================================================
 
-def get_lagged_colnames (behavioral_predictors, lag):
+def get_lagged_colnames (behavioral_predictors, lag, dict = True):
 	# get behavioral variables colnames with time lag
 	columns = []
 	lagged_columns = []
 
-	for item in behavioral_predictors. keys ():
-		items = behavioral_predictors[item]
-		columns. extend (items)
+	if dict:
+		for item in behavioral_predictors. keys ():
+			items = behavioral_predictors[item]
+			columns. extend (items)
+	else:
+		columns = behavioral_predictors
 
 	for item in columns:
 		lagged_columns. extend ([item + "_t%d"%(p) for p in range (lag, 2, -1)])
-		#lagged_columns. extend ([item])
+		#lagged_columns. extend ([item + "_sum"])
+		#lagged_columns. extend ([item + "_t%d"%(p) for p in range (lag, 0, -1)])
 
 	return (lagged_columns)
 
@@ -253,36 +275,48 @@ class toSuppervisedData:
 
 		delet = []
 
-		if X.shape[1] > 1 and p > 4:
+		if X.shape[1] > 0 and p > 4:
 			for j in range (0, self.data. shape [1], p):
+				# delete 3 first lagged variables (keep those close to 5s)
 				delet. extend ([j + p - i for i in range (1, 3)])
 
 		self.data = np. delete (self.data, delet, axis = 1)
 
 		# compute the mean of lagged variables
-		'''n_var = int (self.data. shape [1] / p)
-		new_data = np.empty ([self.data. shape [0], 2 * n_var], dtype = np. float64)
+		n_var = int (self.data. shape [1] / (p - 2))# + self.data. shape [1]
+
+		#new_data = np.empty ([self.data. shape [0], n_var]) #, dtype = np. float64)
+		#new_data = np.empty ([self.data. shape [0], n_var])
 		new_data = np.array ([])
 
-		if X.shape[1] > 2:
-			for j in range (0, self.data. shape [1], p):
-				# [0, 1, 2] is equivalent to t-3, t-4, t-5
-				col = self.data [:, [j + i for i in range (4)]]
-				#new_data [:, int (j / p)] = np. mean (col, axis = 1)
+		for j in range (0, self.data. shape [1], p - 2):
+			# [0, 1, 2] is equivalent to t-3, t-4, t-5
+			cols = self.data [:, [j + i for i in range (p - 2)]]
 
-				# make a PCA on each 	lagged variables
-				model = PCA (n_components = 3)
-				factors = model.fit_transform (col)
+			#for i in range (4):
+				#new_data [:, j + i] = self. data [:, j + i]
+			#new_data [:, j : j + 4] = self.data [:, j : j + 4]
 
-				if (np.isnan (factors). any ()):
-					print ("KAYEN")
+			if len (new_data) == 0:
+				new_data = self.data [:, j : j + (p - 2)]
+				#new_data = np. sum (self.data [:, j : j + 4], axis = 1). reshape (-1, 1)
+			else:
+				new_data = np. append (new_data, self.data [:, j : j + p - 2], axis = 1)
+				#new_data = np. append (new_data, np. sum (self.data [:, j : j + 4], axis = 1). reshape (-1, 1), axis = 1)
 
-				if new_data. shape [0] == 0:
-					new_data = factors
-				else:
-					new_data = np. concatenate ((new_data, factors), axis = 1)
 
-			self.data = new_data'''
+
+			new_data = np. append (new_data, np. sum (self.data [:, j : j + p - 2], axis = 1). reshape (-1, 1), axis = 1)
+			#new_data [:, j + 4] =  np. sum (self.data [:, j : j + 4], axis = 1)
+
+			#new_data [:, int (j / 4)] = np. sum (cols, axis = 1)
+			#new_data [:, int (j / 4) + 1] = np. std (cols, axis = 1)
+			#new_data [:, int (j / 4)] = self.data [:, j + 2]
+
+
+		#print (pd. DataFrame (new_data))
+		#exit (1)
+		self.data = new_data
 
 	## p-decomposition of a vector
 	def vector_decomposition (self, x, p, test = False):

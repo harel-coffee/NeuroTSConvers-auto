@@ -9,7 +9,43 @@ from sklearn import preprocessing
 from skimage import filters
 import argparse
 
+from skimage import filters
 
+#================================================
+def discretize_matrix (mat, min):
+
+	M = mat. copy ()
+
+	for i in range (M.shape [0]):
+		for j in range (0, M.shape [1]):
+				if M[i,j] <= min:
+					M[i,j] = 0
+				else:
+					M[i,j] = 1
+
+
+	return M
+#================================================
+def otsu_discretization (np_matrix, nblocks):
+
+	output = []
+
+	data_blocks = np. vsplit (np_matrix, nblocks)
+
+	for sub_data in data_blocks:
+		sub_result = []
+		disc_threshold = filters. threshold_otsu (sub_data)
+		sub_result = discretize_matrix (sub_data, disc_threshold)
+
+		if len (output) == 0:
+			output =  sub_result
+		else:
+			output = np . concatenate ((output, sub_result), axis = 0)
+
+	return output
+
+
+#====================================================
 def normalize_vect (x):
 	max = np.max (x)
 	min = np.min (x)
@@ -87,12 +123,30 @@ def discretize_vect_sliding (x, win_size = 10):
 	return mat
 
 #===============================================================
-def discretize_array (df, min = 0.1, mean = False, peak = False):
+def auto_discretize (M, columns):
 
-	cols = df. columns
-	M = df. values
+	for j in range (0, M.shape [1]):
 
-	for j in range (1, M.shape [1]):
+		if columns [j] in ["RightSTS", "LeftSTS"]:
+			min = 0.45
+		else:
+			min = 0.62
+
+		print (columns [j], min)
+		for i in range (M.shape [0]):
+
+			if M[i,j] < min:
+				M[i, j] = 0.0
+			else:
+				M[i, j] = 1.0
+
+
+	return M
+#===============================================================
+def discretize_array (M, min = 0.1, mean = False, peak = False):
+
+
+	for j in range (0, M.shape [1]):
 		if peak:
 			peaks, _ = find_peaks (M[:,j], height=min)
 			for i in range (M.shape [0]):
@@ -104,20 +158,41 @@ def discretize_array (df, min = 0.1, mean = False, peak = False):
 			for i in range (M.shape [0]):
 				if mean:
 					min = np. mean (M[:,j])
-				if M[i,j] <= min:
+				if M[i,j] < min:
 					M[i, j] = 0.0
 				else:
 					M[i, j] = 1.0
 
-	return pd.DataFrame (M, columns = cols)
+			'''for i in range (1, M.shape [0] - 1):
+				if M[i, j] == 0 and M[i - 1, j] == 1 and M[i + 1, j] == 1:
+					M[i, j] = 1'''
+
+			'''for i in range (1, M.shape [0] - 1):
+				if M[i, j] == 1 and M[i - 1, j] == 0 and M[i + 1, j] == 0:
+					M[i, j] = 0'''
+
+	return M
+
+#========================================================
+def new_discretization (M, min = 0.1, min_peaks = 0):
+
+	for j in range (0, M.shape [1]):
+		peaks, _ = find_peaks (M[:,j], height=min_peaks)
+		for i in range (M.shape [0]):
+			if min <= M[i,j] or i in peaks:
+				M[i, j] = 1
+			else:
+				M[i, j] = 0
+
+	return M
+
 
 #=====================================================
 
 def discretize_df_kmeans (df, k = 3):
 	for col in df. columns [1:]:
 		clustering = KMeans (n_clusters = k, random_state = 1). fit (df. loc[:, col]. values. reshape (-1, 1))
-		'''print (clustering. inertia_)
-		exit (1)'''
+
 		#clustering = DBSCAN (eps=3, min_samples=2).fit (df. loc[:, col]. values. reshape (-1, 1))
 		df [col] = clustering. labels_
 
@@ -125,61 +200,56 @@ def discretize_df_kmeans (df, k = 3):
 if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser()
-	parser.add_argument("data_type", help="data type")
+	#parser.add_argument("data_type", help="data type")
 	parser.add_argument("--nbins", "-k", default = 2, type = int)
 	parser.add_argument("--mean", "-mean",  action="store_true")
 	parser.add_argument("--peak", "-peak",  action="store_true")
+	parser.add_argument("--otsu", "-otsu",  action="store_true")
+	parser.add_argument("--auto", "-auto",  action="store_true")
 	parser.add_argument("--kmeans", "-kmeans",  action="store_true")
-	parser.add_argument("--threshold", "-min", default = 0.0, type = float)
+	parser.add_argument("--min", "-m", default = 0.0, type = float)
 	parser.add_argument("--type", "-t", default = "raw")
 	args = parser.parse_args()
 
 	print (args)
-
 	""" store the discretization parameters """
 	f= open("disc_params.txt","w+")
 	for item in vars (args). items ():
 		f. write ("%s: %s\n"%(item[0], item [1]))
 	f. close ()
 
-	subjects_in = glob ("time_series/*")
-	subjects_out = glob ("time_series/*")
+	physio_hh_data = pd.read_pickle ("concat_time_series/bold_hh_data.pkl"). values
+	physio_hr_data = pd.read_pickle ("concat_time_series/bold_hr_data.pkl"). values
 
-	#=====================================================#
-	""" discretize physiological data """
-	if args.data_type == "p":
+	cols = pd.read_pickle ("concat_time_series/bold_hh_data.pkl"). columns
 
-		if args. type == "raw":
-			in_data_type = "/physio_ts"
-		elif args. type == "diff":
-			in_data_type = "/physio_diff_ts"
-		elif args. type == "smooth":
-			in_data_type = "/physio_smooth_ts"
+	# normalization
+	#normalize (physio_hh_data)
+	#normalize (physio_hr_data)
 
-		for i in range (len (subjects_in)):
+	print (cols)
 
-			if not os.path. exists ("%s/discretized_physio_ts"%subjects_in[i]):
-				os.makedirs ("%s/discretized_physio_ts"%subjects_in[i])
+	if args. otsu:
+		print ("Otsu discretization")
+		discr_physio_hh_data = otsu_discretization (physio_hh_data, 21)
+		discr_physio_hr_data = otsu_discretization (physio_hr_data, 21)
 
-			subjects_in[i] = subjects_in[i] + in_data_type
-			subjects_out[i] = subjects_out[i] + "/discretized_physio_ts"
+	elif args. auto:
+		discr_physio_hh_data = auto_discretize (physio_hh_data, cols)
+		discr_physio_hr_data = auto_discretize (physio_hr_data, cols)
 
-			pkl_files = glob ("%s/*pkl"%subjects_in[i])
-			pkl_files. sort ()
+	else:
+		discr_physio_hh_data = discretize_array (physio_hh_data,  min = args. min)
+		discr_physio_hr_data = discretize_array (physio_hr_data,  min = args. min)
 
-			for filepath in pkl_files:
-				df = pd. read_pickle (filepath)
-				filename = filepath. split('/')[-1]
 
-				if args.kmeans:
-					cols = df. columns
-					df = df. values
-					min_max_scaler = preprocessing. MinMaxScaler ()
-					df [:,1:] = min_max_scaler. fit_transform (df [:,1:])
-					df = pd. DataFrame (df, columns = cols)
-					discretize_df_kmeans (df, k = args. nbins)
+	discr_physio_hh_data = pd. DataFrame (discr_physio_hh_data, columns = cols)
+	discr_physio_hr_data = pd. DataFrame (discr_physio_hr_data, columns = cols)
 
-				else:
-					#discretize_df (df, float (args.threshold), n_classes = args. nbins)
-					df = discretize_array (df, args.threshold, args. mean, args. peak)
-				df.to_pickle ("%s/%s" %(subjects_out[i], filename))
+
+	# Save data in csv files
+	discr_physio_hh_data. to_csv ("concat_time_series/discr_bold_hh_data.csv", sep = ';', index = False)
+	discr_physio_hr_data. to_csv ("concat_time_series/discr_bold_hr_data.csv", sep = ';', index = False)
+
+	discr_physio_hh_data. to_pickle ("concat_time_series/discr_bold_hh_data.pkl")
+	discr_physio_hr_data. to_pickle ("concat_time_series/discr_bold_hr_data.pkl")
