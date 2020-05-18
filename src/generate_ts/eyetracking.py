@@ -136,9 +136,17 @@ if __name__ == '__main__':
 
 	# Input directory and Output file
 	subject = args. video.split ('/')[-2]
-	conversation_name = args. video.split ('/')[-1]. split ('.')[0]
-	out_file = args. out_dir + conversation_name
 
+	if args. demo:
+		eye_tracking_file = args. eyetracking
+		openface_file = args. facial_features
+		conversation_name = "facial_features_eyetracking"
+	else:
+		eye_tracking_file = "time_series/%s/gaze_coordinates_ts/%s.pkl"%(subject, conversation_name)
+		conversation_name = args. video.split ('/')[-1]. split ('.')[0]
+		openface_file = "time_series/%s/facial_features_ts/%s/%s.csv"%(subject, conversation_name, conversation_name)
+
+	out_file = args. out_dir + conversation_name
 	if os.path.isfile ("%s.pkl"%out_file):
 		test_df = pd.read_pickle ("%s.pkl"%out_file)
 		if test_df. shape [0] == 50:
@@ -161,12 +169,7 @@ if __name__ == '__main__':
 
 	# If demo, we use eyetracking and openface csv files as input,
 	# else, we find them automatically based on the name of the video
-	if args. demo:
-		eye_tracking_file = args. eyetracking
-		openface_file = args. facial_features
-	else:
-		eye_tracking_file = "time_series/%s/gaze_coordinates_ts/%s.pkl"%(subject, conversation_name)
-		openface_file = "time_series/%s/facial_features_ts/%s/%s.csv"%(subject, conversation_name, conversation_name)
+
 
 	# read eyetracking and openface csv files
 	eye_tracking_data = pd. read_pickle (eye_tracking_file) #. values. astype (float)

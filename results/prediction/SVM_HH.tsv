@@ -1,5 +1,0 @@
-region	models_params	dm_method	lag	predictors_dict	selected_predictors	recall. mean	precision. mean	fscore. mean	accuracy. mean	recall. std	precision. std	fscore. std	accuracy. std
-LeftMotor	{'C': 0.9, 'kernel': 'linear'}	PCA_2	6	{'speech_left_ts': ['IPU_left']}	['IPU_left_t6', 'IPU_left_t5', 'IPU_left_t4', 'IPU_left_t3']	0.681872037914692	0.6868966868332053	0.6567734418686558	0.681872037914692	0.0	0.0	0.0	0.0
-RightMotor	{'C': 1, 'kernel': 'rbf'}	PCA_3	6	{'speech_left_ts': ['IPU_left']}	['IPU_left_t6', 'IPU_left_t5', 'IPU_left_t4', 'IPU_left_t3']	0.6877962085308057	0.6726499958227408	0.6599777991600962	0.6877962085308057	0.0	0.0	0.0	0.0
-LeftSTS	{'C': 1, 'kernel': 'rbf'}	RFE_2	6	{'speech_ts': ['disc_IPU']}	['disc_IPU_t4', 'disc_IPU_t3']	0.7045320776927605	0.7245470244594785	0.7078543072013924	0.7045320776927605	0.0	0.0	0.0	0.0
-RightSTS	{'C': 1, 'kernel': 'rbf'}	RFE_4	6	{'speech_ts': ['IPU']}	['IPU_t6', 'IPU_t5', 'IPU_t4', 'IPU_t3']	0.7345971563981043	0.7400336857266977	0.736718795118011	0.7345971563981043	0.0	0.0	0.0	0.0

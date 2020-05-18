@@ -7,18 +7,16 @@ from sklearn.decomposition import PCA, IncrementalPCA, KernelPCA
 from sklearn.feature_selection import RFE
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVR, LinearSVR
+from sklearn_extra.cluster import KMedoids
+from sklearn.cluster import KMeans
 
 from collections import defaultdict
 from itertools import chain
 
 from sklearn.feature_selection import SelectFromModel
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import mutual_info_score
 
-# import fcbf
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-resampling_spec = importlib.util.spec_from_file_location("fcbf", "%s/fcbf.py"%currentdir)
-fcbf = importlib.util.module_from_spec(resampling_spec)
-resampling_spec.loader.exec_module(fcbf)
 #============================================================
 
 def merge_two_dict (a, b):
@@ -212,69 +210,39 @@ def rfe_reduction (train_, test_, percs, estimator_name = "RF"):
 #======================================================================================
 def manual_selection (region):
 
-    # TODO: store information in a file instead of computing each time dictionaries
-
-	eyetracking =  {"eyetracking_ts": ["Vx", "Vy", "saccades", "Face", "Mouth", "Eyes"]}
-	face =  {"eyetracking_ts": ["Face"]}
-	energy = {"energy_ts": ["mouth_AU",  "eyes_AU", "total_AU", "head_rotation_energy", "head_translation_energy", "head_positions"]}
-
 	speech_ipu = {"speech_ts": ["IPU"]}
 	speech_left_ipu = {"speech_left_ts": ["IPU_left"]}
 	speech_left_disc_ipu = {"speech_left_ts": ["disc_IPU_left"]}
 	speech_disc_ipu = {"speech_ts": ["disc_IPU"]}
+	speech_disc_ipu_2 = {"speech_ts": ["disc_IPU_2"]}
+	speech_disc_ipu_3 = {"speech_ts": ["disc_IPU_3"]}
+	speech_disc_ipu_4 = {"speech_ts": ["disc_IPU_4"]}
 
+	speech_left_disc_ipu_2 = {"speech_left_ts": ["disc_IPU_2_left"]}
+	speech_left_disc_ipu_3 = {"speech_left_ts": ["disc_IPU_3_left"]}
+	speech_left_disc_ipu_4 = {"speech_left_ts": ["disc_IPU_4_left"]}
 
-	# emotions
-	text_emotions = {"speech_ts":["Polarity", "Subjectivity"]}
-	text_emotions_left = {"speech_left_ts":["Polarity_left", "Subjectivity_left"]}
-	emotions = {"energy_ts": ['Happiness', 'Sadness','Surprise', 'Fear', 'Anger', 'Disgust']}
-	smiles = {"dlib_smiles_ts": ["dlib_smiles"]}
+	disc_SpeechActivity_left = {"speech_left": ["disc_SpeechActivity_left"]}
+	SpeechActivity_left = {"speech_left": ["SpeechActivity_left"]}
 
-	Rsmiles = {"smiles_ts": ["Smile"]}
-	#emotions = {"emotions_ts": ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']}
+	disc_SpeechActivity = {"speech_left": ["disc_SpeechActivity"]}
+	SpeechActivity = {"speech_left": ["SpeechActivity"]}
 
+	speech_items = {"speech_ts": ["SpeechActivity","disc_SpeechActivity", "IPU", "disc_IPU",\
+	 				"Overlap", "ReactionTime", "FilledBreaks", "Feedbacks", "Discourses",\
+					"Particles", "Laughters", "LexicalRichness1", "LexicalRichness2",\
+					 "SpeechRate", "Polarity", "Subjectivity", "UnionSocioItems"]}
 
-	lexicalR = {"speech_ts":["LexicalRichness1", "LexicalRichness2"]}
-	lexicalR_left = {"speech_left_ts":["LexicalRichness1_left", "LexicalRichness2_left"]}
+	speech_left_items = { "speech_left_ts": ["IPU_left", "SpeechActivity_left", "disc_SpeechActivity_left", "disc_IPU_left",\
+	 					  "Overlap_left", "ReactionTime_left", "FilledBreaks_left", "Feedbacks_left", "SpeechRate_left",\
+						  "Discourses_left", "Particles_left", "Laughters_left", "LexicalRichness1_left", "LexicalRichness2_left", "Polarity_left", "Subjectivity_left", "UnionSocioItems_left"]}
 
-	speech_items = {"speech_ts": [ "IPU", "disc_IPU", "Overlap", "ReactionTime", "FilledBreaks", "Feedbacks", "Discourses",
-				"Particles", "Laughters", "LexicalRichness1", "LexicalRichness2", "Polarity", "Subjectivity", "UnionSocioItems"]}
-
-	speech_left_items = {"speech_left_ts": ["IPU_left", "disc_IPU_left", "Overlap_left", "ReactionTime_left", "FilledBreaks_left", "Feedbacks_left",
-	"Discourses_left", "Particles_left", "Laughters_left", "LexicalRichness1_left", "LexicalRichness2_left", "Polarity_left", "Subjectivity_left", "UnionSocioItems_left"]}
-
-	UnionSocioItems = {"speech_ts": ["UnionSocioItems"]}
-	UnionSocioItems_left = {"speech_ts_left": ["UnionSocioItems_left"]}
-
-	all = merge_dict ([speech_items, speech_left_items, smiles, eyetracking, energy])
-
-	if region in ["Fusiform Gyrus", "LeftFusiformGyrus", "RightFusiformGyrus"]:
-		set_of_behavioral_predictors = [energy, eyetracking, face, merge_dict ([energy, face])]
-
-	elif region in ["LeftFrontaleyeField"]:
-		set_of_behavioral_predictors = [{"eyetracking_ts": ["x", "y"]}, eyetracking, {"eyetracking_ts": ["Vx", "Vy"]}, {"eyetracking_ts": ["saccades"]}]
-
-	elif region in ["LeftMotor", "RightMotor"]:
-		set_of_behavioral_predictors = [speech_left_ipu, speech_left_disc_ipu, speech_left_items,
-										{"speech_left_ts": ["disc_IPU_2_left"]},
-										{"speech_left_ts": ["disc_IPU_3_left"]},
-										{"speech_left_ts": ["disc_IPU_4_left"]},
-										{"speech_left_ts": ["disc_IPU_left", "Overlap_left"]},
-										{"speech_left_ts": ["IPU_left", "Overlap_left"]},
-										merge_dict ([speech_left_ipu, speech_ipu])]
+	if region in ["LeftMotor", "RightMotor"]:
+		set_of_behavioral_predictors = [speech_left_ipu, speech_left_disc_ipu, speech_left_items,\
+		 								disc_SpeechActivity_left, SpeechActivity_left, merge_dict ([speech_left_ipu, speech_ipu])]
 
 	elif region in ["LeftSTS", "RightSTS", 'LeftDLPFC', 'RightDLPFC']:
-		set_of_behavioral_predictors = [speech_items, speech_disc_ipu, speech_ipu]
-
-	elif region in ['LeftPrecuneus', 'RightPrecuneus', 'LeftTemporoParietalJunction', 'RightTemporoParietalJunction', 'LeftVMPFC', 'RightVMPFC', 'RightLatAmygdala', 'LeftLatAMygdala','Hypothalamus']:
-
-		set_of_behavioral_predictors =	[text_emotions, text_emotions_left, emotions, smiles, Rsmiles, UnionSocioItems, UnionSocioItems_left,
-											merge_dict ([smiles, UnionSocioItems, UnionSocioItems_left]),
-											merge_dict ([speech_items, smiles, emotions]),
-											merge_dict ([speech_left_items, smiles, emotions]),
-											merge_dict ([energy, smiles, emotions]),
-											merge_dict ([emotions, text_emotions_left, smiles]),
-											merge_dict ([emotions, text_emotions, text_emotions_left, smiles, energy])]
+		set_of_behavioral_predictors = [speech_items, speech_disc_ipu, speech_ipu,  disc_SpeechActivity, SpeechActivity]
 
 	else:
 		print ("ERROR, ROI: %s has not been processed in reduction step!"%region)
@@ -282,5 +250,52 @@ def manual_selection (region):
 
 	return set_of_behavioral_predictors
 
+#====================================================================================
+def mi_ranking (X, y, k):
+
+	mi_table = []
+	for j in range (X.shape[1]):
+		if len (np.unique (X[:,j])) > 7:
+			clustering = KMeans (n_clusters=7, algorithm = "elkan").fit (X [:,j:j+1])
+			discr = clustering.labels_
+
+		elif len (np.unique (X[:,j])) > 2:
+			clustering = KMeans (n_clusters=2, algorithm = "elkan").fit (X [:,j:j+1])
+			discr = clustering.labels_
+
+		else:
+			discr = X[:,j]
+
+		mi_table. append (mutual_info_score (discr, y))
+
+	sort_index = np.argsort(mi_table)
+
+	return sort_index[-k:]
+#====================================================================================
+def gfsm_feature_selection (X, y, k):
+
+	if k >= X.shape [1]:
+		return list (range (X.shape [1]))
+
+	kmedoids = KMedoids (n_clusters = k, max_iter=1000). fit (np. transpose (X))
+	labels = kmedoids. labels_
+
+	# Get the best variable_indice from each classe
+	#best_index = [0 for i in np. unique (labels)]
+	best_index = []
+
+	for i in  range (len (np. unique (labels))):
+		best_cor = 0
+		for j in range (len (labels)):
+			if labels[j] == i:
+				correlation = np. absolute (np.corrcoef (X[:,j], y) [0,1])
+				if correlation  > best_cor or correlation >= 0.9:
+					#best_index [i] = j
+					best_index. append (j)
+					best_cor = correlation
+
+	return best_index
+
+#=========================================================
 if __name__ == '__main__':
 	print ("test")

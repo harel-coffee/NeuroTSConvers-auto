@@ -1,16 +1,20 @@
-import sys
-import os
-
+import sys, os, inspect
 import numpy as np
 import pandas as pd
 import random as rd
 from ast import literal_eval
-
-from sklearn.decomposition import PCA, IncrementalPCA, KernelPCA
 from sklearn.ensemble import IsolationForest
+from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN # for imbalanced class
+from sklearn.feature_selection import SelectFromModel
+from sklearn import preprocessing
 
-from sklearn.cluster import KMeans
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+maindir = os.path.dirname(parentdir)
 
+sys.path.insert(3,maindir)
+
+from src.feature_selection.reduction import manual_selection, generic_reduction
 #===========================================================
 def outlier_detection (data_, alpha = 0.1):
 	data = data_.copy ()
@@ -26,54 +30,6 @@ def outlier_detection (data_, alpha = 0.1):
 
 	data = np. delete (data, delt, axis = 0)
 	return data, delt
-#===========================================================
-def extract_models_params_from_crossv (crossv_results_filename, brain_area, features, reduction_method):
-	"""
-		- extract  parameters of the mode from cross-validation results
-
-		- crossv_results_filename: the filename of the model where the results are saved.
-		- brain_area: brain region name
-		- features: the set of predictive features (lagged)
-		- dictionary containing the parameter of the model
-	"""
-
-	features_exist_in_models_params = False
-	models_params_ = pd.read_csv (crossv_results_filename, sep = ';', header = 0, na_filter = False, index_col = False)
-	models_params = models_params_. loc [(models_params_ ["region"] ==  brain_area)]
-
-	# if the brain_area was not processed with cross-validation
-	if models_params. shape [0] == 0:
-		best_model_params_index = models_params_ ["fscore. mean"].idxmax ()
-		best_model_params = models_params_. loc [best_model_params_index, "models_params"]
-		std_errors =  models_params. loc [best_model_params_index, ["recall. std",  "precision. std",  "fscore. std",  "kappa. std"]]
-		return literal_eval (best_model_params), std_errorss
-
-	# find the models_paras associated to each predictors_list with dimension reduction method
-	for i in list (models_params. index):
-		if set (literal_eval(models_params. loc [i, "predictors_list"])) == set (features) and models_params. loc [i, "dm_method"] == reduction_method:
-			features_exist_in_models_params = True
-			best_model_params_index = i
-			#best_model_params = models_params. loc [i, "models_params"]
-			break
-
-	# find the models_paras associated to each predictors_list without dimension reduction method
-	if not features_exist_in_models_params:
-		for i in list (models_params. index):
-			if set (literal_eval(models_params. loc [i, "predictors_list"])) == set (features):
-				features_exist_in_models_params = True
-				best_model_params_index = i
-				#best_model_params = models_params. loc [i, "models_params"]
-				break
-
-	# else, choose the best model_params without considering features
-	if not features_exist_in_models_params:
-		best_model_params_index = models_params ["fscore. mean"].idxmax ()
-
-
-	best_model_params = models_params. loc [best_model_params_index, "models_params"]
-	std_errors =  models_params. loc [best_model_params_index, ["recall. std",  "precision. std",  "fscore. std",  "kappa. std"]]. values
-
-	return literal_eval (best_model_params), std_errors. tolist ()
 
 #===========================================================
 def features_in_select_results (selec_results, region, features):
@@ -110,7 +66,6 @@ def write_line (filename, row, mode = "a+", sep = ';'):
 	return
 
 #=======================================================
-
 def list_convers (n_blocks = 4, n_convs = 6):
 	# Return the list of conversations names in the format like : CONV2_002
 	convs = []
@@ -123,245 +78,174 @@ def list_convers (n_blocks = 4, n_convs = 6):
 			convs. append ("convers-TestBlocks%s_CONV%d"%(t, i) +  "_%03d"%j)
 	return convs
 
-#=======================================================
+#===============================================================
+def get_names_from_laggedNames (lagged_n):
+	vars = []
+	for a in lagged_n:
+		vars.append ('_'. join (a. split ('_')[:-1]))
 
-def get_behavioral_data (subject, convers, external_predictors):
-	'''
-	concatenate data of one conversation with multiple modalities
-	'''
-	external_data = np. array ([])
-	external_filenames = ["time_series/%s/%s/%s.pkl"%(subject, data_type, convers) for data_type in external_predictors. keys ()]
-	external_columns = [external_predictors[item] for item in external_predictors. keys ()]
+	return list (set (vars))
+#=================================================================================================================
+def get_indices (small_list, big_list):
+	"""
+		get index of samll_list in big_list
+		supposes that big_list contains small_list and both contain unique values
+	"""
+	indices = []
+	for j in range (len (big_list)):
+		if big_list[j] in small_list:
+			indices. append (j)
+	return indices
 
-	for filename, columns in zip (external_filenames, external_columns):
+#=================================================================================================================
+def get_best_features (brain_area, model, type):
+	"""
+		get best features in terms of fscore results (tsv file)
+	"""
+	filename = "results/prediction/%s_%s.tsv"%(model, type)
+	df = pd. read_csv (filename, sep = '\t')
 
-		read_file = pd.read_pickle (filename)[columns]. values
-		if read_file. shape[0] < 50:
-			print ("Error in %s %s %s"%(subject, convers, external_predictors))
-			exit (1)
-		if external_data. size == 0:
-			if os. path. exists (filename):
-				try:
-					external_data = read_file
-				except:
-					continue
+	best_features_results = df. loc [df["region"] == brain_area]
+	best_features = literal_eval (best_features_results. loc[:,"selected_predictors"]. values[0])
+
+	return best_features
+
+
+
+#============================================================
+def train_test_from_df (df, y, perc, pos, normalize = False, resample = False):
+	"""
+		df: dataframe (predictive variables)
+		y: numpy array (the target variable)
+		Split data into train and test set
+		perc: the persentage of test set (between 0 and 1)
+		pos: the position of the test data. For example, if 1, then take the first perc from the data
+		normalize: if Truen normlize train and test set, with model fitted only on train data.
+	"""
+
+	nb_predictions = int (perc * df.shape[0])
+	test_index =  range (pos * nb_predictions, (pos + 1) * nb_predictions)
+
+	train_index = []
+
+	for i in range (len (df)):
+		if i not in test_index:
+			train_index. append (i)
+
+	train_set = df. iloc [train_index, :].values
+	test_set =  df. iloc [test_index, :].values
+
+	# Target variable of train and test sets resp.
+	y_train_ = y [train_index, :]. copy (). flatten ()
+	y_test_ =  y [test_index, :].  copy (). flatten ()
+
+	if normalize:
+		min_max_scaler = preprocessing. MinMaxScaler ()
+		train_set = min_max_scaler. fit_transform (train_set)
+		test_set = min_max_scaler. transform (test_set)
+
+	# Handling  the oversampling in training data (if they are imbalanced) with the ADASYN algorithm
+	if resample:
+		res_model = ADASYN (random_state=5)
+		try:
+			train_set, y_train_ =  res_model. fit_resample (train_set, y_train_)
+			#test_set, y_test_ =  RandomOverSampler (random_state=5). fit_resample (test_set, y_test_)
+		except:
+			print ("Data already balanced!")
+			pass
+
+	return train_set, test_set, y_train_, y_test_
+
+#===============================================================
+def specific_feature_selection (train_set, test_set, y_train,  k, method, model):
+
+	# No feature selection in this case
+	if method == "None" or model == "baseline" or k == (train_set. shape [1]):
+		select_indices = [a for a in range (train_set. shape [1])]
+		train_set_select = train_set [:]
+		test_set_select = test_set [:]
+
+	# Feature selection with the TREE method on all features (without specifing the number of features to select)
+	elif method == "TREE_ALL":
+		select_indices = []
+		if model == "KNN":
+			clf = global_dict_models ["RF"]
 		else:
-			if os. path. exists (filename):
-				try:
-					external_data = np. concatenate ((external_data, read_file), axis = 1)
-				except:
-					continue
+			clf = global_dict_models [model]
+		clf = clf.fit (train_set, y_train)
+		select_model = SelectFromModel (clf, prefit = True)
+		support = select_model. get_support()
 
-	return external_data
+		for i in range (len (support)):
+			if support [i]:
+				select_indices. append (i)
 
-#============================================================
+		# transform data
+		train_set_select = select_model.transform (train_set)
+		test_set_select = select_model.transform (test_set)
 
-def shuffle_data_by_blocks (data, block_size):
-
-	blocks = [data [i : i + block_size] for i in range (0, len(data), block_size)]
-	# shuffle the blocks
-	rd.shuffle (blocks)
-	# concatenate the shuffled blocks
-	output = [b for bs in blocks for b in bs]
-	output = np. array (output)
-	return output
-
-
-#============================================================
-
-def train_test_split (data, test_size = 0.2):
-
-	nb_obs = int (data. shape [0] * (1 - test_size))
-	train_d = data [0 : nb_obs, :]
-	test_d = data [nb_obs :, :]
-
-	return train_d, test_d
-
-#============================================================
-
-def get_lagged_colnames (behavioral_predictors, lag, dict = True):
-	# get behavioral variables colnames with time lag
-	columns = []
-	lagged_columns = []
-
-	if dict:
-		for item in behavioral_predictors. keys ():
-			items = behavioral_predictors[item]
-			columns. extend (items)
+	# Normal feature selection by specifing the number of features to select
 	else:
-		columns = behavioral_predictors
-
-	for item in columns:
-		lagged_columns. extend ([item + "_t%d"%(p) for p in range (lag, 2, -1)])
-		#lagged_columns. extend ([item + "_sum"])
-		#lagged_columns. extend ([item + "_t%d"%(p) for p in range (lag, 0, -1)])
-
-	return (lagged_columns)
-
-#=========================================================================================
-def concat_ (subject, target_column, convers, lag, behavioral_predictors, add_target = False, reg = False):
-
-	data = pd. DataFrame ()
-
-	if subject == "sub-01":
-		convers = convers [0:9]
-
-	for conv in convers:
-
-		if reg:
-			filename = "time_series/%s/physio_ts/%s.pkl"%(subject, conv)
+		train_set_select, select_indices, selector = generic_reduction (train_set, y_train, method = method, n_comps = k, estimator_name = "RF")
+		if method in ["PCA", "KPCA", "ICA", "TREE"]:
+			test_set_select = selector. transform (test_set)
 		else:
-			filename = "time_series/%s/discretized_physio_ts/%s.pkl"%(subject, conv)
+			test_set_select = test_set [:, [int(a) for a in select_indices]]
 
-		target = pd.read_pickle (filename). loc [:,[target_column]]. values
 
-		# Load neurophysio and behavioral predictors
-		if len (behavioral_predictors) > 0:
-			external_data = get_behavioral_data (subject, conv, behavioral_predictors)
+	return train_set_select, test_set_select, select_indices
+
+#============================================================
+def get_predictive_features_set (target_column, method, model, all, all_m, type):
+
+	"""
+		all_m: test non-realted features specific to each brain area
+		all: test all features as input
+	"""
+
+	# if model is the baseline, choose some random variables
+	if model == "baseline":
+		set_of_behavioral_predictors =  [{"speech_left": ["IPU_left", "disc_IPU_left"]}]
+
+	elif all_m:
+		set_of_behavioral_predictors = manual_selection (target_column)
+
+	elif all:
+		# Add  of all features
+		set_of_behavioral_predictors =  [
+		{"speech_left": ["SpeechActivity_left", "disc_SpeechActivity_left", "IPU_left", "disc_IPU_left", "Polarity_left", "Subjectivity_left", "Overlap_left",\
+		 				"ReactionTime_left", "FilledBreaks_left", "Feedbacks_left", "Discourses_left", "Particles_left", "Laughters_left", "LexicalRichness1_left",\
+						"LexicalRichness2_left",  "SpeechRate_left", "UnionSocioItems_left"],\
+
+		"speech_ts": ["SpeechActivity", "disc_SpeechActivity", "IPU", "disc_IPU", "Overlap", "ReactionTime", "FilledBreaks", "Feedbacks",\
+					 "Discourses", "Particles", "Laughters", "LexicalRichness1", "LexicalRichness2", "SpeechRate", "UnionSocioItems", "Polarity", "Subjectivity"],
+
+		 "facial_features": ["dlib_smiles", "Smile", "mouth_AU","eyes_AU", "total_AU", "head_rotation_energy", "head_translation_energy","gaze_angle_x","gaze_angle_y",\
+		  					"pose_Tx", "pose_Ty", "pose_Tz","pose_Rx", "pose_Ry", "pose_Rz",\
+							"angry", "disgust", "fear", "happy", "sad", "surprise", "neutral"],
+
+		 "eyetracking_ts": ["Vx", "Vy", "saccades", "Face", "Mouth", "Eyes"]
+		}]
+
+	else:
+		#set_of_behavioral_predictors = manual_selection (target_column)
+		if target_column in ["CSF", "GreyMatter", "WhiteMatter"]:
+			target_name = "rMPFC"
 		else:
-			external_data = None
+			target_name = target_column
+		results = pd. read_csv ("results/prediction/RF_%s_selected.tsv"%(type), sep = "\t")
+		set_of_behavioral_predictors = literal_eval (results. loc [results. region == target_name, "selected_predictors"]. values[0])
 
-		if external_data. shape[0] == 0:
-			continue
+		set_of_behavioral_predictors  = [str (x) for x in set_of_behavioral_predictors]
 
-		# add to rows to behavioral features
-		external_data = np. append (external_data, external_data[-2:,:], axis = 0)
-		#external_data = external_data. append (external_data[-1])
+		# eliminate temporal representation
+		set_of_behavioral_predictors = list (set ([('_'). join (a. split ('_')[:-1]) for a in set_of_behavioral_predictors]))
 
-		if target. shape [0] < external_data. shape [0]:
-			external_data = external_data[0:target. shape [0],:]
-
-		# smoothing
-		#target = target[1:]
-		#external_data = np. diff (external_data, axis = 0)
-
-		# concatenate data of all conversations
-		if data.shape [0] == 0:
-			data = np. concatenate ((target, external_data), axis = 1)#[8:-8, :]
-			if lag > 0:
-				supervised_data = toSuppervisedData (data, lag, add_target = add_target)
-				data = np.concatenate ((supervised_data. targets[:,0:1], supervised_data.data), axis = 1)
-
-		else:
-			#U = pd. concat ([target, external_data], axis = 1)
-			U = np. concatenate ((target, external_data), axis = 1)#[8:-8, :]
-			if lag > 0:
-				supervised_U = toSuppervisedData (U, lag, add_target = add_target)
-				U = np.concatenate ((supervised_U. targets[:,0:1], supervised_U.data), axis = 1)
-			data =  np. concatenate ((data, U), axis = 0)
-
-		# DEBUG CONVERSATION
-		'''if data. shape [1] == 0:
-			print (18 * "=")
-			print (conv)
-			print (subject)
-			exit (1)'''
-
-	return data
-
-#=======================================================
-class toSuppervisedData:
-	targets = np.empty([0,0],dtype=float)
-	data = np.empty([0,0],dtype=float)
-
-	## constructor
-	def __init__(self, X, p, test_data = False, add_target = False):
-
-		self.targets = self.targets_decomposition (X, p)
-		self.data = self.matrix_decomposition (X, p, test_data)
-
-		if not add_target:
-			self.data = np. delete (self.data, range (0, p), axis = 1)
-
-		delet = []
-
-		if X.shape[1] > 0 and p > 4:
-			for j in range (0, self.data. shape [1], p):
-				# delete 3 first lagged variables (keep those close to 5s)
-				delet. extend ([j + p - i for i in range (1, 3)])
-
-		self.data = np. delete (self.data, delet, axis = 1)
-
-		# compute the mean of lagged variables
-		n_var = int (self.data. shape [1] / (p - 2))# + self.data. shape [1]
-
-		#new_data = np.empty ([self.data. shape [0], n_var]) #, dtype = np. float64)
-		#new_data = np.empty ([self.data. shape [0], n_var])
-		new_data = np.array ([])
-
-		for j in range (0, self.data. shape [1], p - 2):
-			# [0, 1, 2] is equivalent to t-3, t-4, t-5
-			cols = self.data [:, [j + i for i in range (p - 2)]]
-
-			#for i in range (4):
-				#new_data [:, j + i] = self. data [:, j + i]
-			#new_data [:, j : j + 4] = self.data [:, j : j + 4]
-
-			if len (new_data) == 0:
-				new_data = self.data [:, j : j + (p - 2)]
-				#new_data = np. sum (self.data [:, j : j + 4], axis = 1). reshape (-1, 1)
-			else:
-				new_data = np. append (new_data, self.data [:, j : j + p - 2], axis = 1)
-				#new_data = np. append (new_data, np. sum (self.data [:, j : j + 4], axis = 1). reshape (-1, 1), axis = 1)
-
-
-
-			new_data = np. append (new_data, np. sum (self.data [:, j : j + p - 2], axis = 1). reshape (-1, 1), axis = 1)
-			#new_data [:, j + 4] =  np. sum (self.data [:, j : j + 4], axis = 1)
-
-			#new_data [:, int (j / 4)] = np. sum (cols, axis = 1)
-			#new_data [:, int (j / 4) + 1] = np. std (cols, axis = 1)
-			#new_data [:, int (j / 4)] = self.data [:, j + 2]
-
-
-		#print (pd. DataFrame (new_data))
+		#print (type (set_of_behavioral_predictors))
+		set_of_behavioral_predictors = [{"selected": set_of_behavioral_predictors}]
+		#print (target_column, set_of_behavioral_predictors)
 		#exit (1)
-		self.data = new_data
 
-	## p-decomposition of a vector
-	def vector_decomposition (self, x, p, test = False):
-		n = len(x)
-		if test:
-			add_target_to_data = 1
-		else:
-			add_target_to_data = 0
 
-		output = np.empty([n-p,p],dtype=float)
 
-		for i in range (n-p):
-			for j in range (p):
-				output[i,j] = x[i + j + add_target_to_data]
-		return output
-
-	# p-decomposition of a target
-	def target_decomposition (self,x,p):
-		n = len(x)
-		output = np.empty([n-p,1],dtype=float)
-		for i in range (n-p):
-			output[i] = x[i+p]
-		return output
-
-	# p-decomposition of a matrix
-	def matrix_decomposition (self,x,p, test=False):
-		output = np.empty([0,0],dtype=float)
-		out = np.empty([0,0],dtype=float)
-
-		for i in range(x.shape[1]):
-			out = self.vector_decomposition(x[:,i],p, test)
-			if output.size == 0:
-				output = out
-			else:
-				output = np.concatenate ((output,out),axis=1)
-
-		return output
-	# extract all the targets decomposed
-	def targets_decomposition (self,x,p):
-		output = np.empty([0,0],dtype=float)
-		out = np.empty([0,0],dtype=float)
-		for i in range(x.shape[1]):
-			out = self.target_decomposition(x[:,i],p)
-			if output.size == 0:
-				output = out
-			else:
-				output = np.concatenate ((output,out),axis=1)
-		return output
+	return set_of_behavioral_predictors

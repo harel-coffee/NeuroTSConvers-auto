@@ -281,9 +281,11 @@ if __name__ == '__main__':
         edf_files = glob ("data/edt/*.edf*")
 
         for filename in edf_files:
-            os. system ("data/./EDF_Access_API/Example/edf2asc -failsafe -t -miss NaN -y -v %s"%filename)
+            os. system ("./data/EDF_Access_API/Example/edf2asc -failsafe -t -miss NaN -y -v %s"%filename)
 
     asci_files = glob ("data/edt/*.asc*")
+
+
     asci_files. sort ()
 
     subjects = []
@@ -293,8 +295,10 @@ if __name__ == '__main__':
         else:
             subjects.append("sub-%s" % str(i))
 
+    print (subjects)
+
     for subject in subjects:
         if not os.path.exists("time_series/%s/gaze_coordinates_ts" % subject):
             os.makedirs("time_series/%s/gaze_coordinates_ts" % subject)
 
-    Parallel (n_jobs=4) (delayed (process_filename) (filename) for filename in asci_files)
+    Parallel (n_jobs=1) (delayed (process_filename) (filename) for filename in asci_files)

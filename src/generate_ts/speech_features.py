@@ -15,7 +15,7 @@ import glob
 import os,sys,inspect
 import argparse
 
-#from utils.vad import VoiceActivityDetector
+from utils.vad import VoiceActivityDetector
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -53,7 +53,7 @@ ALL_ITEMS_ENG = FILLED_PAUSE_ITEMS + LAUGHTER + MAIN_FEEDBACK_ITEMS_ENG + MAIN_D
 colors = ["black", "darkblue", "brown", "red", "slategrey", "darkorange", "grey","blue", "indigo", "darkgreen"]
 
 #-----------------------------------------------------------------------------
-'''def detect_speech_activity (wav_filename):
+def detect_speech_activity (wav_filename):
 
 	v = VoiceActivityDetector (wav_filename)
 	raw_detection = v.detect_speech()
@@ -63,10 +63,10 @@ colors = ["black", "darkblue", "brown", "red", "slategrey", "darkorange", "grey"
 
 	for item in speech_labels:
 		# Interpausal units 200 ms min
-		#if (item["speech_end"] - item["speech_begin"] >= 0.2):
-		intervals. append ([item["speech_begin"], item["speech_end"]])
+		if (item["speech_end"] - item["speech_begin"] >= 0.2):
+			intervals. append ([item["speech_begin"], item["speech_end"]])
 
-	return (intervals)'''
+	return (intervals)
 
 #-----------------------------------------------------------------------------
 def get_intervals (ts):
@@ -166,7 +166,7 @@ def sample_square (ts, axis):
 	if len (ts) == 0:
 		return y
 
-	# Compute the durations of events in each interval of the axis
+	# Compute the duration in each interval of the axis
 	i = 0
 	for inter_ax in axis_intervals:
 		step = inter_ax [1] - inter_ax [0]
@@ -217,7 +217,7 @@ if __name__ == '__main__':
 
 	print ("---------", conversation_name, "---------")
 
-	output_filename_png = out_dir +  conversation_name + ".png"
+	#output_filename_png = out_dir +  conversation_name + ".png"
 	output_filename_pkl = out_dir +  conversation_name + ".pkl"
 
 
@@ -227,7 +227,7 @@ if __name__ == '__main__':
 		physio_index. append (1.205 + physio_index [i - 1])
 
 	# exit if conversation already processed
-	if os.path.isfile (output_filename_pkl) and os.path.isfile (output_filename_png):
+	if os.path.isfile (output_filename_pkl):# and os.path.isfile (output_filename_png):
 		print ("Conversation already processed")
 		exit (1)
 
@@ -244,8 +244,11 @@ if __name__ == '__main__':
 		elif "left" in file and  "palign.textgrid" in file:
 			transcription_left_palign = file
 
+		elif "left" in file and  ".wav" in file:
+			left_wav_file = file
 
-
+		elif "right" in file and  ".wav" in file:
+			right_wav_file = file
 
 	# Select language
 	if args. language == "fr":
@@ -269,15 +272,20 @@ if __name__ == '__main__':
 
 	if args.left:
 		tier = tier_left
-		min_ipu = 0.1
+		min_ipu = 0.01
+		wav_file = left_wav_file
 	else:
 		tier = tier_right
-		min_ipu = 0.1
+		min_ipu = 0.01
+		wav_file = right_wav_file
 
 
+	SpeechActivity = detect_speech_activity (wav_file)
 	IPU, _ = ts. get_ipu (tier, 1)
-	talk = ts. get_discretized_ipu (IPU, physio_index, 1)
+	#talk = ts. get_discretized_ipu (IPU, physio_index, 1)
 
+
+	disc_SpeechActivity = sample_square (SpeechActivity, physio_index)
 	discretized_ipu_1 = sample_square (IPU, physio_index)
 	discretized_ipu_2 = sample_square (IPU, physio_index)
 	discretized_ipu_3 = sample_square (IPU, physio_index)
@@ -285,6 +293,11 @@ if __name__ == '__main__':
 
 
 	for i in range (len (discretized_ipu_1)):
+		if disc_SpeechActivity [i] <= 0.3:
+			disc_SpeechActivity [i] = 0
+		else:
+			disc_SpeechActivity [i] = 1
+
 		if discretized_ipu_1 [i] < min_ipu:
 			discretized_ipu_1 [i] = 0
 		else:
@@ -322,6 +335,8 @@ if __name__ == '__main__':
 	richess_lex1 = ts.generate_RL_ts (tier, nlp, "meth1")
 	richess_lex2 = ts.generate_RL_ts (tier, nlp, "meth2")
 
+	speech_rate = ts.get_speech_rate (tier, nlp)
+
 	# Time of Filled breaks, feed_backs
 	# aligment
 	try:
@@ -344,7 +359,7 @@ if __name__ == '__main__':
 		main_particles_items = ts. get_items_existence (tier_align, list_of_tokens =  MAIN_PARTICLES_ITEMS)
 		socio_items = ts. get_items_existence (tier_align, list_of_tokens =  ALL_ITEMS)
 
-		silence = ts. get_durations (tier_align, list_of_tokens = SILENCE)
+		#silence = ts. get_durations (tier_align, list_of_tokens = SILENCE)
 
 		# handle particle items separately as continuous time series
 		#main_particles_items = ts. get_particle_items (tier, nlp, list_of_tokens =  MAIN_PARTICLES_ITEMS)
@@ -364,11 +379,12 @@ if __name__ == '__main__':
 	# Time series dictionary
 	time_series = {
 				#"Signal": [signal_x, envelope],
-				#"SpeechActivity": speech_activity,
+				"SpeechActivity": SpeechActivity,
 				#"talk": talk,
-				"Silence": silence,
+				#"Silence": silence,
 				"IPU": IPU,
 				"disc_IPU": discretized_ipu_1,
+				"disc_SpeechActivity": disc_SpeechActivity,
 				"disc_IPU_2": discretized_ipu_2,
 				"disc_IPU_3": discretized_ipu_3,
 				"disc_IPU_4": discretized_ipu_4,
@@ -383,13 +399,14 @@ if __name__ == '__main__':
 				"UnionSocioItems":socio_items,
 				"LexicalRichness1":richess_lex2,
 				"LexicalRichness2":richess_lex1,
+				"SpeechRate": speech_rate,
  				"Polarity": [x_emotions, polarity],
 				"Subjectivity": [x_emotions, subejctivity],
 				}
 
 	#labels = list (time_series. keys ())
-	labels = ["Silence", "IPU", "disc_IPU", "disc_IPU_2", "disc_IPU_3", "disc_IPU_4", "Overlap", "ReactionTime", "FilledBreaks", "Feedbacks", "Discourses",
-				"Particles", "Laughters", "JointLaugh", "UnionSocioItems", "LexicalRichness1", "LexicalRichness2", "Polarity", "Subjectivity"]
+	labels = ["SpeechActivity", "IPU", "disc_SpeechActivity", "disc_IPU", "disc_IPU_2", "disc_IPU_3", "disc_IPU_4", "Overlap", "ReactionTime", "FilledBreaks", "Feedbacks", "Discourses",\
+				"Particles", "Laughters", "JointLaugh", "UnionSocioItems", "LexicalRichness1", "LexicalRichness2", "SpeechRate", "Polarity", "Subjectivity"]
 
 	markers = ['.' for i in range (len (labels))]
 
@@ -400,7 +417,7 @@ if __name__ == '__main__':
 	df["Time (s)"] = physio_index
 	#df ["Silence"] = silence
 	for label in labels [:]:
-		if "disc_IPU" in label:
+		if label in ["disc_IPU", "disc_SpeechActivity", "disc_IPU_2", "disc_IPU_3", "disc_IPU_4"]:
 			df [label] = time_series [label]
 
 		elif (label in ["Silence", "IPU", "SpeechActivity", "Overlap", "joint_laugh"]):

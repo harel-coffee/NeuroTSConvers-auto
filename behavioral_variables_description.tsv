@@ -12,8 +12,9 @@ Speech	SpeechActivity	Detecting speech activity from audio file.
 	Subjectivity	This metric is calculated for each IPU. Then, we consider the obtained value (in the range [0,1]) at the time point close to the center of the IPU.	https://stackabuse.com/python-for-nlp-introduction-to-the-pattern-library/
 	Lexical_richness_1	This metric is calculated for each IPU as follows: (nbr of different tokens) / (total nbr of tokens)	
 	Lexical_richness_2	Similarily to lexical_richness_1: (nbr of adjectifs + nbr of adverbes) / (total nbr of tokens)	
-Video	gaze_angle_x	Gaze angle x coordinate	
-	gaze_angle_y	Gaze angle y coordinate	
+Video	gaze_angle_x	Gaze angle x coordinate (Openface output)	
+	gaze_angle_y	Gaze angle y coordinate (Openface output)	
+	pose_Tx, pose_Ty, pose_Tz, pose_Rx, pose_Ry, pose_Rz	Head pose estimation (Openface output)	
 	Head_translation_energy	Kinetic energy of head translation	
 	Head_rotation_energy	Kinetic energy of head rotation	
 	mouth_AU	Sum of action units associated to mouth movements (AU10_r, AU12_r, AU14_r, AU15_r, AU17_r, AU20_r, AU23_r, AU25_r, AU26_r)	

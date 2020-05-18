@@ -113,19 +113,46 @@ def process_transcriptions (subject, left):
     print (subject + "Done ....")
 
 #====================================#
+# generate time series from transcriptions files
+def transcriptions_to_emotions (subject, left):
+    print ("\t" + subject, 15*'-', '\n')
+
+    if left:
+        out_dir = "time_series/" + subject + "/text_features_left_ts/"
+    else:
+        out_dir = "time_series/" + subject + "/text_features_ts/"
+
+    if not os. path. exists (out_dir):
+        os. makedirs (out_dir)
+
+    conversations = glob. glob ("data/transcriptions/" + subject + "/*")
+    conversations. sort ()
+
+    for conv in conversations:
+        try:
+            if left:
+                os. system ("python3 src/generate_ts/text_features.py %s %s --left" % (conv, out_dir))
+            else:
+                os. system ("python3 src/generate_ts/text_features.py %s %s" % (conv, out_dir))
+        except:
+            print ("generate_socio_ts.py: Error in processing %s"%conv)
+
+    print (subject + "Done ....")
+
+#====================================#
 # generate time series from videos
 
 def process_videos (subject, type):
 
 	print ("\t" + subject, 15*'-', '\n')
-	out_dir_landMarks = "time_series/" + subject + "/facial_features_ts/"
+	out_dir_openface = "time_series/" + subject + "/openface_features_ts/"
 	out_dir_eyetracking = "time_series/" + subject + "/eyetracking_ts/"
-	out_dir_energy = "time_series/" + subject + "/energy_ts/"
+	out_dir_facial = "time_series/" + subject + "/facial_features_ts/"
 	out_dir_emotions = "time_series/" + subject + "/emotions_ts/"
 	out_dir_smiles = "time_series/" + subject + "/smiles_ts/"
 	out_dir_dlibSmiles = "time_series/" + subject + "/dlib_smiles_ts/"
 
-	for out_dir in [out_dir_landMarks, out_dir_eyetracking, out_dir_energy, out_dir_emotions, out_dir_smiles, out_dir_dlibSmiles]:
+	for out_dir in [out_dir_openface, out_dir_eyetracking, out_dir_facial, out_dir_emotions, out_dir_smiles, out_dir_dlibSmiles]:
 		if not os. path. exists (out_dir):
 			os. makedirs (out_dir)
 
@@ -143,16 +170,16 @@ def process_videos (subject, type):
 			os. system ("python3 src/generate_ts/eyetracking.py " + video + " " + out_dir_eyetracking)
 
 		elif type == 'e':
-			os.system("python3 src/generate_ts/generate_emotions_ts.py " +  video + " " + out_dir_emotions)
+			os.system("python3 src/generate_ts/facial_emotions.py " +  video + " " + out_dir_emotions)
 
 		elif type == 'f':
-			os. system ("python3 src/generate_ts/facial_action_units.py " +  video + " " + out_dir_landMarks)
+			os. system ("python3 src/generate_ts/facial_action_units.py " +  video + " " + out_dir_openface)
 
 		if type == "c":
 			os. system ("python3 src/generate_ts/colorfulness.py " + video + " " + out_dir_colors)
 
-		elif type =="energy":
-			os. system ("python3 src/generate_ts/energy.py " + video + " " + out_dir_energy)
+		elif type =="facial":
+			os. system ("python3 src/generate_ts/facial_features.py " + video + " " + out_dir_facial)
 
 		elif type =="dlib_smiles":
 			os. system ("python3 src/generate_ts/dlib_smiles.py " + video + " " + out_dir_dlibSmiles)
@@ -189,7 +216,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 
 	parser. add_argument ('--subjects', '-s', nargs = '+', type=int,  help="List of subjects numbers, 0 to process all the subjects.")
-	parser.add_argument("--type", "-t", help="type of data to process.", choices = ['c', 't', 'e', 'f', 'eye', 'energy', 'ipus', "smiles", "dlib_smiles"])
+	parser.add_argument("--type", "-t", help="type of data to process.", choices = ['c', 't', 'e', 'f', 'eye', 'facial', 'ipus', "smiles", "dlib_smiles", "txt_e"])
 	parser.add_argument("--left", "-le", help="Process participant speech.", action="store_true")
 
 	args = parser.parse_args()
@@ -209,8 +236,11 @@ if __name__ == '__main__':
 	if args. type == 't':
 		Parallel (n_jobs = 7) (delayed(process_transcriptions) (subject, args.left) for subject in subjects)
 
+	elif args. type == 'txt_e':
+		Parallel (n_jobs = 7) (delayed(transcriptions_to_emotions) (subject, args.left) for subject in subjects)
+
 	elif args. type == 'ipus':
 	    get_nb_ipus (subjects, args.left)
 
 	else:
-		Parallel (n_jobs=3) (delayed(process_videos) (subject, args. type) for subject in subjects)
+		Parallel (n_jobs=5) (delayed(process_videos) (subject, args. type) for subject in subjects)

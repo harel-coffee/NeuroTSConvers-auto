@@ -22,6 +22,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument("video", help="the path of the video to process.")
 	parser.add_argument("out_dir", help="the path where to store the results.")
+	parser.add_argument("--demo",'-d', help = "If this script is using for demo.", action = "store_true")
 	parser.add_argument("--show",'-s', help="Showing the video.", action="store_true")
 
 	args = parser.parse_args()
@@ -37,14 +38,17 @@ if __name__ == '__main__':
 	    args. out_dir += '/'
 
 	# Input directory
-	conversation_name = args. video.split ('/')[-1]. split ('.')[0]
+	if args. demo:
+	    conversation_name = "facial_features_smiles"
+	else:
+		# Input directory
+		conversation_name = args. video.split ('/')[-1]. split ('.')[0]
+
 	out_file = args. out_dir + conversation_name
 
-	print (conversation_name)
-
-	if os.path.isfile (out_file + ".pkl"):
+	'''if os.path.isfile (out_file + ".pkl"):
 		print ("files already exists")
-		exit (1)
+		exit (1)'''
 
 	# starting video streaming
 	video_capture = cv2.VideoCapture(args.video)
@@ -60,11 +64,8 @@ if __name__ == '__main__':
 	time_series = []
 	current_time = 0
 
-	# reading the video
 	j = 0
 	while True:
-		ret, bgr_image = video_capture.read()
-		ret, bgr_image = video_capture.read()
 		ret, bgr_image = video_capture.read()
 		ret, bgr_image = video_capture.read()
 		ret, bgr_image = video_capture.read()
@@ -90,7 +91,10 @@ if __name__ == '__main__':
 			else:
 				time_series. append ([current_time, 0])
 
-		current_time += 5.0 / fps
+		else:
+			time_series. append ([current_time, 0])
+
+		current_time += 3.0 / fps
 
 		if args. show:
 			cv2.rectangle (bgr_image, (x, y), ((x + w), (y + h)), (255, 0, 0), 2)

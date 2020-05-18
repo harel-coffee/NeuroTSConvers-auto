@@ -125,7 +125,7 @@ def get_ipu (tier, value):
 
 	for sppasOb  in tier:
 		label, [start, stop], [start_r, stop_r] = get_interval (sppasOb)
-		if label in ["#", "", " ", "***", "*"] :
+		if label in ["#", "", " ", "***", "*"] and (start - stop) < 0.2:
 			continue
 		else:
 			x. append ([start, stop])
@@ -230,8 +230,7 @@ def richess_lexicale (phrase, nlp,  method = "meth1"):
 		total_tokens = 0
 
 		for token in doc:
-			if token.pos_ != "PUNCT":
-				total_tokens += 1
+			total_tokens += 1
 			if token.pos_ == "ADJ":
 				nb_adj += 1
 
@@ -247,9 +246,7 @@ def richess_lexicale (phrase, nlp,  method = "meth1"):
 		token_without_punct = []
 
 		for token in doc:
-			#if token. IS_PUNCT == 0:
-			if token.pos_ != "PUNCT":
-				token_without_punct. append (token.pos_)
+			token_without_punct. append (token.lemma_)
 
 		# List of different tokens
 		different_tokens = set (token_without_punct)
@@ -285,9 +282,62 @@ def generate_RL_ts (tier, nlp, method = "meth1"):
 			y. append (lexical_rich)
 			i = i + ((start + stop) / 10.0)
 
-
 	return x, y
 
+#===============================================================
+def syllables (phrase, nlp):
+
+	doc = nlp (phrase)
+	all_syllables = 0
+
+	for token in doc:
+
+		word = token.text. lower ()
+		syllables = 0
+
+		for i in range(len(word)) :
+			# If the first letter in the word is a vowel then it is a syllable.
+			if i == 0 and word[i] in "aeiouy" :
+				syllables = syllables + 1
+
+			# Else if the previous letter is not a vowel.
+			elif word[i - 1] not in "aeiouy" :
+				# If it is no the last letter in the word and it is a vowel.
+				if i < len(word) - 1 and word[i] in "aeiouy" :
+					syllables = syllables + 1
+
+				# Else if it is the last letter and it is a vowel that is not e.
+				elif i == len(word) - 1 and word[i] in "aiouy" :
+					syllables = syllables + 1
+
+			# Adjust syllables from 0 to 1.
+			if len(word) > 0 and syllables == 0 :
+				syllables = 1
+
+		all_syllables += syllables
+	return all_syllables
+#===============================================================
+def get_speech_rate (tier, nlp):
+
+	times = []
+	speech_rate = []
+
+	for sppasOb  in tier:
+		label, [start, stop], [start_r, stop_r] = get_interval (sppasOb)
+		i = (start + stop) / 2.0
+
+		if label in ["#", "", " ", "***", "*"] :
+			rate = 0
+
+		else:
+			rate = float (syllables (label, nlp)) / (stop - start)
+
+		while (i < stop):
+			times. append (i)
+			speech_rate. append (rate)
+			i = i + ((start + stop) / 10.0)
+
+	return times, speech_rate
 
 #===========================================================
 # Get emotions from text : polarity and subjectivity index

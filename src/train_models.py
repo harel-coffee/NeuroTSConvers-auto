@@ -15,18 +15,28 @@ warnings.filterwarnings("ignore")
 
 from sklearn.externals import joblib
 
+from sklearn import linear_model
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import GradientBoostingClassifier
+from prediction. lstm import *
+
+from imblearn.over_sampling import ADASYN
 
 import argparse
 
+
+def get_features_from_lagged (lagged_variables):
+	features = set (['_'. join (a.split ('_')[0:-1]) for a in lagged_variables])
+	return ','. join (map (str, list (features)))
+
+
 #============================================================
-def  train_model (data, model, params, lag):
+def  train_model (X, y, model, params):
 
 	if model == "LSTM":
-		pred_model = fit_lstm (data [:, 1:], data[:, 0], lag = lag,  params = params)
+		pred_model = fit_lstm (X, y, lag = 4,  params = params)
 
 	else:
 		if model == "SGD":
@@ -34,6 +44,9 @@ def  train_model (data, model, params, lag):
 
 		elif model == "GB":
 			pred_model = GradientBoostingClassifier (**params)
+
+		elif model == "LREG":
+			pred_model = linear_model.LogisticRegression ()
 
 		elif model == "RF":
 			pred_model = RandomForestClassifier (**params)
@@ -50,29 +63,27 @@ def  train_model (data, model, params, lag):
 		elif model in ["random", "baseline"]:
 			pred_model = DummyClassifier (**params)
 
-		pred_model. fit (data[:,1:], data[:,0])
+		pred_model. fit (X, y)
 
 	return pred_model
 
 #============================================================
-def train_model_area (subjects, target_column, convers, lag):
+def train_model_area (X, y, target_column, convers_type):
 
+	""" X: dataframe with columns
+		y: dataframe one column, the target variable
 	"""
-	Predict the BOLD signal of a given breain area using
-	data of multiple subjects
-	"""
 
-	print (target_column, "\n ------------")
 
-	if (int (convers[0]. split ('_')[-1]) % 2 == 1): convers_type = "HH"
-	else : convers_type = "HR"
-
+	print ("\n\nProcessing ROI: %s ...."%target_column)
 	""" extract best model, and the best parameters founded based on fscore measure """
 	prediction_files = glob. glob ("results/prediction/*%s.tsv"%convers_type)
 	best_score = 0
 
 	for filename in prediction_files:
 
+		if "LSTM" in filename or "LREG" in filename:
+			continue
 		model_name = filename. split ('/')[-1]. split ('_') [0]
 		pred_data = pd.read_csv (filename,  sep = '\t', header = 0, na_filter = False, index_col = False)
 
@@ -91,77 +102,77 @@ def train_model_area (subjects, target_column, convers, lag):
 
 	#selected_features =  best_results ["selected_indices"]
 	selected_features  = literal_eval (best_results ["selected_predictors"])
-	best_behavioral_predictors = literal_eval (best_results ["predictors_dict"])
+
+	best_behavioral_predictors = get_features_from_lagged (selected_features)
+
+
+	'''try:
+		best_behavioral_predictors = literal_eval (best_results ["predictors_dict"])
+	except:
+		best_behavioral_predictors = best_results ["predictors_dict"]
+		pass'''
+
+
 	best_model_params = literal_eval (best_results ["models_params"]. replace("'", '"'))
 
-	lagged_names = get_lagged_colnames (best_behavioral_predictors, args. lag)
 
-	selected_indices = [lagged_names. index (col) for col in selected_features]
+	#lagged_names = get_lagged_colnames (best_behavioral_predictors, args. lag)
 
-	# concatenate data of all subjects  with regards to the behavioral variables
-	train_data = concat_ (subjects[0], target_column, convers, lag, best_behavioral_predictors, False)
-
-	# use only best features founded using feature selection
-	for subject in subjects[1:]:
-		subject_data = concat_ (subject, target_column, convers, lag, best_behavioral_predictors, False)
-		#train_data = np.concatenate ((train_data, subject_data), axis = 0)
-		train_data = np. concatenate ((train_data, subject_data), axis = 0)
+	#selected_indices = [lagged_names. index (col) for col in selected_features]
 
 
 	# feature selection using the founded indices
-	train_data = train_data [:, [0] + [int (a + 1) for a in selected_indices]]
+	X_train = X. loc[:, selected_features]
+
+	# balance the data with ADASYN
+	try:
+		X_train, y =  ADASYN (random_state=5). fit_resample (X_train.values, y. values. flatten ())
+	except:
+		X_train, y = X_train.values, y. values. flatten ()
+		pass
 
 	# Train the model
-	print (best_model)
-	pred_model = train_model (train_data, best_model, best_model_params, lag)
+	print ("Best model: %s"%best_model)
+	print ("... Done\n")
+
+	pred_model = train_model (X_train, y, best_model, best_model_params)
 
 	# save the model
-	joblib. dump (pred_model, "trained_models/%s_%s_%s.pkl"%(best_model, target_column, convers_type))
+	joblib. dump (pred_model, "trained_models/%s_%s_%s.pkl"%(best_model, target_column, convers_type), compress=3)
+
+	return best_model, best_behavioral_predictors
 
 #====================================================================#
 
-def train_all (subjects, regions, lag):
+def train_all (X, Y, regions, type = "HH"):
 
-	subjects_str = "subject"
-	for subj in subjects:
-		subjects_str += "_%s"%subj
+	output = []
+	for target_column in regions:
+		best_model, features = train_model_area (X, Y. loc [:, target_column], target_column, type)
+		output. append ([target_column, best_model, features])
 
-	subjects = ["sub-%02d"%i for i in subjects]
-
-	# fill HH and HR conversations
-	convers = list_convers ()
-	hh_convers = []
-	hr_convers = []
-
-	for i in range (len (convers)):
-		if i % 2 == 1:
-			hr_convers. append (convers [i])
-		else:
-			hh_convers. append (convers [i])
+	return pd.DataFrame (output, columns = ["ROI", "Prediction model", "Predictive Features"])
 
 	# Predict HH  and HR conversations separetely
-	Parallel (n_jobs = 1) (delayed (train_model_area) (subjects, target_column,  convers = hh_convers, lag = int (lag))
-									for target_column in regions)
-
-	Parallel (n_jobs = 1) (delayed (train_model_area) (subjects, target_column, convers = hr_convers, lag = int (lag))
-									for target_column in regions)
+	#Parallel (n_jobs = 1) (delayed (train_model_area) (X, Y. loc [:, target_column], target_column, type)
+									#for target_column in regions)
 
 if __name__=='__main__':
 	# read arguments
 	parser = argparse. ArgumentParser ()
-	parser. add_argument ('--subjects', '-s', nargs = '+', type = int)
 	parser. add_argument ("--remove", "-rm", help = "remove previous files", action = "store_true")
-	parser. add_argument ("--lag", "-p", default = 5, type = int)
 	parser. add_argument ('--regions','-rg', nargs = '+', type=int)
-
-	if not os. path. exists ("trained_models"):
-		os. makedirs ("trained_models")
 
 	args = parser.parse_args()
 	print (args)
 
-	if args. remove:
-		os. system ("rm trained_models/*")
+	# create output folder if not exist
+	if not os. path. exists ("trained_models"):
+		os. makedirs ("trained_models")
+	else:
+		# remove old results if specified in argument
+		if args. remove:
+			os. system ("rm trained_models/*")
 
 	# get regions names for their codes
 	brain_areas_desc = pd. read_csv ("brain_areas.tsv", sep = '\t', header = 0)
@@ -170,4 +181,31 @@ if __name__=='__main__':
 	for num_region in args. regions:
 		brain_areas. append (brain_areas_desc . loc [brain_areas_desc ["Code"] == num_region, "Name"]. values [0])
 
-	train_all (args. subjects, brain_areas, args. lag)
+
+	# Read training data for human-human and human-robot
+	X_hh = pd. read_pickle ("concat_time_series/behavioral_hh_data.pkl")
+	X_hr = pd. read_pickle ("concat_time_series/behavioral_hr_data.pkl")
+
+	Y_hh = pd. read_pickle ("concat_time_series/discr_bold_hh_data.pkl")
+	Y_hr = pd. read_pickle ("concat_time_series/discr_bold_hr_data.pkl")
+
+	# Train the models for each brain area
+	results_hh = train_all (X_hh, Y_hh, brain_areas, "HH")
+	results_hr = train_all (X_hr, Y_hr, brain_areas, "HR")
+
+	print (results_hh)
+	print (results_hr)
+
+	df = pd. concat ([results_hh, results_hr. iloc[:,1:]], axis = 1)
+	header1 = ["ROIS"] + ["Human-Human", "Human-Machine"] +  ["Human-Human", "Human-Machine"]
+	header2 = ["ROIS"] + ["Best model", "Features"] +  ["Best model", "Features"]
+
+
+	df. columns = [np. array (header1), np. array (header2)]
+	print (df)
+	#print(df.to_latex(index=False, multirow = True))
+
+	'''latex = df.to_latex(index=False, multirow = True)
+	file = open ("table.txt", mode = 'w')
+	file. write (latex)
+	file. close ()'''
