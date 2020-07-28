@@ -3,8 +3,7 @@ import numpy as np
 import pandas as pd
 import random as rd
 from ast import literal_eval
-from sklearn.ensemble import IsolationForest
-from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN # for imbalanced class
+from imblearn.over_sampling import ADASYN # for imbalanced data
 from sklearn.feature_selection import SelectFromModel
 from sklearn import preprocessing
 
@@ -15,21 +14,7 @@ maindir = os.path.dirname(parentdir)
 sys.path.insert(3,maindir)
 
 from src.feature_selection.reduction import manual_selection, generic_reduction
-#===========================================================
-def outlier_detection (data_, alpha = 0.1):
-	data = data_.copy ()
 
-	outlier_model = IsolationForest (n_estimators = 100, contamination = alpha)
-	outlier_model. fit (data)
-	scores = outlier_model. predict (data)
-
-	delt = []
-	for m in range (len (scores)):
-	    if scores [m] == -1:
-	        delt. append (m)
-
-	data = np. delete (data, delt, axis = 0)
-	return data, delt
 
 #===========================================================
 def features_in_select_results (selec_results, region, features):
@@ -215,12 +200,12 @@ def get_predictive_features_set (target_column, method, model, all, all_m, type)
 		set_of_behavioral_predictors =  [
 		{"speech_left": ["SpeechActivity_left", "disc_SpeechActivity_left", "IPU_left", "disc_IPU_left", "Polarity_left", "Subjectivity_left", "Overlap_left",\
 		 				"ReactionTime_left", "FilledBreaks_left", "Feedbacks_left", "Discourses_left", "Particles_left", "Laughters_left", "LexicalRichness1_left",\
-						"LexicalRichness2_left",  "SpeechRate_left", "UnionSocioItems_left"],\
+						"LexicalRichness2_left",  "UnionSocioItems_left"],\
 
 		"speech_ts": ["SpeechActivity", "disc_SpeechActivity", "IPU", "disc_IPU", "Overlap", "ReactionTime", "FilledBreaks", "Feedbacks",\
-					 "Discourses", "Particles", "Laughters", "LexicalRichness1", "LexicalRichness2", "SpeechRate", "UnionSocioItems", "Polarity", "Subjectivity"],
+					 "Discourses", "Particles", "Laughters", "LexicalRichness1", "LexicalRichness2", "UnionSocioItems", "Polarity", "Subjectivity"],
 
-		 "facial_features": ["dlib_smiles", "Smile", "mouth_AU","eyes_AU", "total_AU", "head_rotation_energy", "head_translation_energy","gaze_angle_x","gaze_angle_y",\
+		 "facial_features": ["dlib_smiles", "mouth_AU","eyes_AU", "total_AU","AU01_r", "AU02_r", "AU6_r", "AU26_r", "head_rotation_energy", "head_translation_energy","gaze_angle_x","gaze_angle_y",\
 		  					"pose_Tx", "pose_Ty", "pose_Tz","pose_Rx", "pose_Ry", "pose_Rz",\
 							"angry", "disgust", "fear", "happy", "sad", "surprise", "neutral"],
 
@@ -233,19 +218,12 @@ def get_predictive_features_set (target_column, method, model, all, all_m, type)
 			target_name = "rMPFC"
 		else:
 			target_name = target_column
+
 		results = pd. read_csv ("results/prediction/RF_%s_selected.tsv"%(type), sep = "\t")
 		set_of_behavioral_predictors = literal_eval (results. loc [results. region == target_name, "selected_predictors"]. values[0])
-
 		set_of_behavioral_predictors  = [str (x) for x in set_of_behavioral_predictors]
-
-		# eliminate temporal representation
+		# Transform temporal representation to regular names
 		set_of_behavioral_predictors = list (set ([('_'). join (a. split ('_')[:-1]) for a in set_of_behavioral_predictors]))
-
-		#print (type (set_of_behavioral_predictors))
 		set_of_behavioral_predictors = [{"selected": set_of_behavioral_predictors}]
-		#print (target_column, set_of_behavioral_predictors)
-		#exit (1)
-
-
 
 	return set_of_behavioral_predictors

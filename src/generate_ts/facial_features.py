@@ -27,7 +27,6 @@ if __name__ == '__main__':
 	parser.add_argument("--facial_features",'-faf', help = "the path of the facial features file (csv file) (for demo).")
 	args = parser.parse_args()
 
-
 	if args. out_dir[-1] != '/':
 	    args. out_dir += '/'
 
@@ -55,7 +54,7 @@ if __name__ == '__main__':
 	    print ("Error, file %s does not exists"%openface_file)
 	    exit (1)
 
-	# compute the index of the index BOLD signal frequency
+	# The index of BOLD signal
 	physio_index = [0.6025]
 	for i in range (1, 50):
 		physio_index. append (1.205 + physio_index [i - 1])
@@ -72,6 +71,12 @@ if __name__ == '__main__':
 	df1 ["mouth_AU"] = openface_data. loc [:,[" AU10_r", " AU12_r"," AU14_r"," AU15_r"," AU17_r"," AU20_r", " AU23_r", " AU25_r", " AU26_r"]]. sum (axis = 1)
 	df1["eyes_AU"] = openface_data. loc [:, [" AU01_r", " AU02_r", " AU04_r", " AU05_r", " AU06_r", " AU07_r", " AU09_r"]]. sum (axis = 1)
 	df1["total_AU"] = df1 ["mouth_AU"] + df1 ["eyes_AU"]
+	df1["AU12_r"] = openface_data [" AU12_r"]
+	df1["AU6_r"] = openface_data [" AU06_r"]
+	df1["AU26_r"] = openface_data [" AU26_r"]
+	df1["AU01_r"] = openface_data [" AU01_r"]
+	df1["AU02_r"] = openface_data [" AU02_r"]
+
 	df1["gaze_angle_x"] =  openface_data. loc [:, [" gaze_angle_x"]]
 	df1["gaze_angle_y"] =  openface_data. loc [:, [" gaze_angle_y"]]
 
@@ -79,15 +84,14 @@ if __name__ == '__main__':
 	output_time_series = pd.DataFrame (resampling. resample_ts (df1. values, physio_index, mode = "mean"), columns = df1.columns)
 
 	# head positions
-	head_positions = openface_data. loc [:,[" timestamp", " pose_Tx", " pose_Ty", " pose_Tz", " pose_Rx", " pose_Ry"," pose_Rz"]]#. diff (). abs (). sum (axis = 1)
-	#head_positions = np. concatenate ((openface_data. loc [:, [" timestamp"]]. values, head_positions. values. reshape (-1, 1)), axis = 1)
+	head_positions = openface_data. loc [:,[" timestamp", " pose_Tx", " pose_Ty", " pose_Tz", " pose_Rx", " pose_Ry"," pose_Rz"]]
 	head_positions = resampling. resample_ts (head_positions.values, physio_index, mode = "mean")
 	output_time_series["pose_Tx"] = head_positions [:,1]
 	output_time_series["pose_Ty"] = head_positions [:,2]
 	output_time_series["pose_Tz"] = head_positions [:,3]
-	output_time_series["pose_Rx"] = head_positions [:,1]
-	output_time_series["pose_Ry"] = head_positions [:,2]
-	output_time_series["pose_Rz"] = head_positions [:,3]
+	output_time_series["pose_Rx"] = head_positions [:,4]
+	output_time_series["pose_Ry"] = head_positions [:,5]
+	output_time_series["pose_Rz"] = head_positions [:,6]
 
 	# head movment energy
 	head_translation = openface_data. loc [:, [" timestamp", " pose_Tx", " pose_Ty", " pose_Tz"]]
@@ -98,8 +102,6 @@ if __name__ == '__main__':
 	# concatenate all columns
 	output_time_series["head_rotation_energy"] = head_rotation_energy [:,1]
 	output_time_series["head_translation_energy"] = head_translation_energy [:,1]
-
-
 
 	# save data in pickle file
 	output_time_series.to_pickle (out_file + ".pkl")

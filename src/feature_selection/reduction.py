@@ -231,18 +231,23 @@ def manual_selection (region):
 	speech_items = {"speech_ts": ["SpeechActivity","disc_SpeechActivity", "IPU", "disc_IPU",\
 	 				"Overlap", "ReactionTime", "FilledBreaks", "Feedbacks", "Discourses",\
 					"Particles", "Laughters", "LexicalRichness1", "LexicalRichness2",\
-					 "SpeechRate", "Polarity", "Subjectivity", "UnionSocioItems"]}
+					 "Polarity", "Subjectivity", "UnionSocioItems"]}
 
 	speech_left_items = { "speech_left_ts": ["IPU_left", "SpeechActivity_left", "disc_SpeechActivity_left", "disc_IPU_left",\
-	 					  "Overlap_left", "ReactionTime_left", "FilledBreaks_left", "Feedbacks_left", "SpeechRate_left",\
+	 					  "Overlap_left", "ReactionTime_left", "FilledBreaks_left", "Feedbacks_left",\
 						  "Discourses_left", "Particles_left", "Laughters_left", "LexicalRichness1_left", "LexicalRichness2_left", "Polarity_left", "Subjectivity_left", "UnionSocioItems_left"]}
 
 	if region in ["LeftMotor", "RightMotor"]:
-		set_of_behavioral_predictors = [speech_left_ipu, speech_left_disc_ipu, speech_left_items,\
+		set_of_behavioral_predictors = [speech_left_ipu, speech_left_disc_ipu, speech_left_items, speech_left_disc_ipu_2, speech_left_disc_ipu_3,speech_left_disc_ipu_4,\
 		 								disc_SpeechActivity_left, SpeechActivity_left, merge_dict ([speech_left_ipu, speech_ipu])]
 
 	elif region in ["LeftSTS", "RightSTS", 'LeftDLPFC', 'RightDLPFC']:
 		set_of_behavioral_predictors = [speech_items, speech_disc_ipu, speech_ipu,  disc_SpeechActivity, SpeechActivity]
+
+	elif region in ["LeftFusiformGyrus", "RightFusiformGyrus"]:
+		set_of_behavioral_predictors =  [{"facial_features": ["dlib_smiles", "Smile", "mouth_AU","eyes_AU", "total_AU","AU01_r", "AU02_r", "AU6_r", "AU26_r", "head_rotation_energy", "head_translation_energy","gaze_angle_x","gaze_angle_y",\
+				  					"pose_Tx", "pose_Ty", "pose_Tz","pose_Rx", "pose_Ry", "pose_Rz",\
+									"angry", "disgust", "fear", "happy", "sad", "surprise", "neutral", "Vx", "Vy", "saccades", "Face", "Mouth", "Eyes"]}]
 
 	else:
 		print ("ERROR, ROI: %s has not been processed in reduction step!"%region)
@@ -271,6 +276,42 @@ def mi_ranking (X, y, k):
 	sort_index = np.argsort(mi_table)
 
 	return sort_index[-k:]
+
+#====================================================================================
+def mi_ranking_for_lstm (X_lagged, y, k, lag):
+
+	# Get original variables from lagged ones
+	index = []
+	for i in range (0, X_lagged. shape [1], lag):
+		index.append (i)
+	X = X_lagged[:, index]
+
+	# Feature selection on original variables
+	mi_table = []
+	for j in range (X.shape[1]):
+		if len (np.unique (X[:,j])) > 7:
+			clustering = KMeans (n_clusters=7, algorithm = "elkan").fit (X [:,j:j+1])
+			discr = clustering.labels_
+
+		elif len (np.unique (X[:,j])) > 2:
+			clustering = KMeans (n_clusters=2, algorithm = "elkan").fit (X [:,j:j+1])
+			discr = clustering.labels_
+
+		else:
+			discr = X[:,j]
+
+		mi_table. append (mutual_info_score (discr, y))
+
+	sort_index = np. argsort (mi_table)[-k:]
+
+	# Extend selected indices on lagged variables
+	sort_index_orig = []
+	for i in range (len (sort_index)):
+		sort_index_orig. append (sort_index[i]*lag)
+		for j in range (1, lag):
+			sort_index_orig. append (sort_index[i]*lag + j)
+
+	return sort_index_orig
 #====================================================================================
 def gfsm_feature_selection (X, y, k):
 

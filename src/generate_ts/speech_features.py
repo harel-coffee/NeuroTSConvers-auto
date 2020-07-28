@@ -46,7 +46,7 @@ MAIN_PARTICLES_ITEMS = [u"quoi",u"hein",u"bon",u'mais',u'ben',u'beh',u'enfin',u'
 ALL_ITEMS = FILLED_PAUSE_ITEMS + LAUGHTER + MAIN_FEEDBACK_ITEMS + MAIN_DISCOURSE_ITEMS + MAIN_PARTICLES_ITEMS
 
 MAIN_FEEDBACK_ITEMS_ENG = [u"mh",u"yes",u"yeah",u'no',u'ah']+ OK_FORMS  + [u"right"] + LAUGHTER_FORMS
-MAIN_DISCOURSE_ITEMS_ENG = [u"so",u"but",u"therefore",u'and',u'then',u'finally',u'because',u'parcequ',u'after']
+MAIN_DISCOURSE_ITEMS_ENG = [u"so",u"but",u"therefore",u'and',u'then',u'finally',u'because',u'after']
 MAIN_PARTICLES_ITEMS_ENG = [u"what",u"hein",u"well",u'but',u'ben',u'finally',u'short']
 ALL_ITEMS_ENG = FILLED_PAUSE_ITEMS + LAUGHTER + MAIN_FEEDBACK_ITEMS_ENG + MAIN_DISCOURSE_ITEMS_ENG + MAIN_PARTICLES_ITEMS_ENG
 
@@ -280,12 +280,12 @@ if __name__ == '__main__':
 		wav_file = right_wav_file
 
 
-	SpeechActivity = detect_speech_activity (wav_file)
+	#SpeechActivity = detect_speech_activity (wav_file)
 	IPU, _ = ts. get_ipu (tier, 1)
 	#talk = ts. get_discretized_ipu (IPU, physio_index, 1)
 
 
-	disc_SpeechActivity = sample_square (SpeechActivity, physio_index)
+	#disc_SpeechActivity = sample_square (SpeechActivity, physio_index)
 	discretized_ipu_1 = sample_square (IPU, physio_index)
 	discretized_ipu_2 = sample_square (IPU, physio_index)
 	discretized_ipu_3 = sample_square (IPU, physio_index)
@@ -293,10 +293,10 @@ if __name__ == '__main__':
 
 
 	for i in range (len (discretized_ipu_1)):
-		if disc_SpeechActivity [i] <= 0.3:
+		'''if disc_SpeechActivity [i] <= 0.3:
 			disc_SpeechActivity [i] = 0
 		else:
-			disc_SpeechActivity [i] = 1
+			disc_SpeechActivity [i] = 1'''
 
 		if discretized_ipu_1 [i] < min_ipu:
 			discretized_ipu_1 [i] = 0
@@ -379,15 +379,15 @@ if __name__ == '__main__':
 	# Time series dictionary
 	time_series = {
 				#"Signal": [signal_x, envelope],
-				"SpeechActivity": SpeechActivity,
+				#"SpeechActivity": SpeechActivity,
 				#"talk": talk,
 				#"Silence": silence,
 				"IPU": IPU,
 				"disc_IPU": discretized_ipu_1,
-				"disc_SpeechActivity": disc_SpeechActivity,
-				"disc_IPU_2": discretized_ipu_2,
-				"disc_IPU_3": discretized_ipu_3,
-				"disc_IPU_4": discretized_ipu_4,
+				#"disc_SpeechActivity": disc_SpeechActivity,
+				"disc_IPU2": discretized_ipu_2,
+				"disc_IPU3": discretized_ipu_3,
+				"disc_IPU4": discretized_ipu_4,
 				"Overlap": overlap,
 				"ReactionTime":reaction_time,
 				"FilledBreaks":filled_breaks,
@@ -405,7 +405,7 @@ if __name__ == '__main__':
 				}
 
 	#labels = list (time_series. keys ())
-	labels = ["SpeechActivity", "IPU", "disc_SpeechActivity", "disc_IPU", "disc_IPU_2", "disc_IPU_3", "disc_IPU_4", "Overlap", "ReactionTime", "FilledBreaks", "Feedbacks", "Discourses",\
+	labels = ["IPU", "disc_SpeechActivity", "disc_IPU", "disc_IPU2", "disc_IPU3", "disc_IPU4", "Overlap", "ReactionTime", "FilledBreaks", "Feedbacks", "Discourses",\
 				"Particles", "Laughters", "JointLaugh", "UnionSocioItems", "LexicalRichness1", "LexicalRichness2", "SpeechRate", "Polarity", "Subjectivity"]
 
 	markers = ['.' for i in range (len (labels))]
@@ -417,7 +417,7 @@ if __name__ == '__main__':
 	df["Time (s)"] = physio_index
 	#df ["Silence"] = silence
 	for label in labels [:]:
-		if label in ["disc_IPU", "disc_SpeechActivity", "disc_IPU_2", "disc_IPU_3", "disc_IPU_4"]:
+		if label in ["disc_IPU", "disc_SpeechActivity", "disc_IPU2", "disc_IPU3", "disc_IPU4"]:
 			df [label] = time_series [label]
 
 		elif (label in ["Silence", "IPU", "SpeechActivity", "Overlap", "joint_laugh"]):
