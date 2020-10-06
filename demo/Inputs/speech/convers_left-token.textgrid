@@ -1,0 +1,119 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0.0
+xmax = 58.9535600907000017
+tiers? <exists>
+size = 1
+item []:
+	item [1]:
+		class = "IntervalTier"
+		name = "Tokens"
+		xmin = 0.0
+		xmax = 58.9535600907
+		intervals: size = 20
+		intervals [1]:
+			xmin = 0.0
+			xmax = 0.129977324263
+			text = "*"
+		intervals [2]:
+			xmin = 0.129977324263
+			xmax = 2.14
+			text = "#"
+		intervals [3]:
+			xmin = 2.14
+			xmax = 2.96997732426
+			text = "*"
+		intervals [4]:
+			xmin = 2.96997732426
+			xmax = 3.38997732426
+			text = "#"
+		intervals [5]:
+			xmin = 3.38997732426
+			xmax = 5.22997732426
+			text = "j'
+ai
+vu
+une
+poire
+à
+l'
+envers"
+		intervals [6]:
+			xmin = 5.22997732426
+			xmax = 7.88997732426
+			text = "#"
+		intervals [7]:
+			xmin = 7.88997732426
+			xmax = 8.42997732426
+			text = "en
+jau-"
+		intervals [8]:
+			xmin = 8.42997732426
+			xmax = 11.9900226757
+			text = "#"
+		intervals [9]:
+			xmin = 11.9900226757
+			xmax = 12.9699773243
+			text = "pomme
+à
+l'
+envers"
+		intervals [10]:
+			xmin = 12.9699773243
+			xmax = 23.4
+			text = "#"
+		intervals [11]:
+			xmin = 23.4
+			xmax = 23.9699773243
+			text = "c'
+est
+la"
+		intervals [12]:
+			xmin = 23.9699773243
+			xmax = 24.7649886621
+			text = "#"
+		intervals [13]:
+			xmin = 24.7649886621
+			xmax = 26.6899773243
+			text = "c'
+est
+la
+photo
+qui
+est
+à
+l'
+envers"
+		intervals [14]:
+			xmin = 26.6899773243
+			xmax = 29.6049886621
+			text = "#"
+		intervals [15]:
+			xmin = 29.6049886621
+			xmax = 29.8899773243
+			text = "*"
+		intervals [16]:
+			xmin = 29.8899773243
+			xmax = 39.8449886621
+			text = "#"
+		intervals [17]:
+			xmin = 39.8449886621
+			xmax = 40.8499773243
+			text = "elle
+a
+pas
+de
+bouche"
+		intervals [18]:
+			xmin = 40.8499773243
+			xmax = 50.8899773243
+			text = "#"
+		intervals [19]:
+			xmin = 50.8899773243
+			xmax = 51.5299773243
+			text = "*"
+		intervals [20]:
+			xmin = 51.5299773243
+			xmax = 58.9535600907
+			text = "#"
