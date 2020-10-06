@@ -15,7 +15,6 @@ sys.path.insert(3,maindir)
 
 from src.feature_selection.reduction import manual_selection, generic_reduction
 
-
 #===========================================================
 def features_in_select_results (selec_results, region, features):
 	"""
@@ -109,11 +108,17 @@ def train_test_from_df (df, y, perc, pos, normalize = False, resample = False):
 	"""
 
 	nb_predictions = int (perc * df.shape[0])
-	test_index =  range (pos * nb_predictions, (pos + 1) * nb_predictions)
 
+	begin_index = pos * nb_predictions
+	end_index = min (df.shape[0], int ((pos + 1) * nb_predictions))
+
+	#begin_index = df.shape[0] - nb_predictions
+	#end_index = df.shape[0]
+
+	test_index =  range (begin_index, end_index)
 	train_index = []
 
-	for i in range (len (df)):
+	for i in range (df.shape[0]):
 		if i not in test_index:
 			train_index. append (i)
 
@@ -188,29 +193,12 @@ def get_predictive_features_set (target_column, method, model, all, all_m, type)
 		all: test all features as input
 	"""
 
-	# if model is the baseline, choose some random variables
-	if model == "baseline":
-		set_of_behavioral_predictors =  [{"speech_left": ["IPU_left", "disc_IPU_left"]}]
-
-	elif all_m:
+	if all_m:
 		set_of_behavioral_predictors = manual_selection (target_column)
 
 	elif all:
 		# Add  of all features
-		set_of_behavioral_predictors =  [
-		{"speech_left": ["SpeechActivity_left", "disc_SpeechActivity_left", "IPU_left", "disc_IPU_left", "Polarity_left", "Subjectivity_left", "Overlap_left",\
-		 				"ReactionTime_left", "FilledBreaks_left", "Feedbacks_left", "Discourses_left", "Particles_left", "Laughters_left", "LexicalRichness1_left",\
-						"LexicalRichness2_left",  "UnionSocioItems_left"],\
-
-		"speech_ts": ["SpeechActivity", "disc_SpeechActivity", "IPU", "disc_IPU", "Overlap", "ReactionTime", "FilledBreaks", "Feedbacks",\
-					 "Discourses", "Particles", "Laughters", "LexicalRichness1", "LexicalRichness2", "UnionSocioItems", "Polarity", "Subjectivity"],
-
-		 "facial_features": ["dlib_smiles", "mouth_AU","eyes_AU", "total_AU","AU01_r", "AU02_r", "AU6_r", "AU26_r", "head_rotation_energy", "head_translation_energy","gaze_angle_x","gaze_angle_y",\
-		  					"pose_Tx", "pose_Ty", "pose_Tz","pose_Rx", "pose_Ry", "pose_Rz",\
-							"angry", "disgust", "fear", "happy", "sad", "surprise", "neutral"],
-
-		 "eyetracking_ts": ["Vx", "Vy", "saccades", "Face", "Mouth", "Eyes"]
-		}]
+		set_of_behavioral_predictors =  ["all"]
 
 	else:
 		#set_of_behavioral_predictors = manual_selection (target_column)
@@ -219,7 +207,11 @@ def get_predictive_features_set (target_column, method, model, all, all_m, type)
 		else:
 			target_name = target_column
 
-		results = pd. read_csv ("results/prediction/RF_%s_selected.tsv"%(type), sep = "\t")
+		if not os.path.exists ("results/best_results/bestModel_%s_selected.tsv"%(type)):
+			print ("path results/best_results/bestModel_%s_selected.tsv does not exist"%(type))
+			exit (1)
+
+		results = pd. read_csv ("results/best_results/bestModel_%s_selected.tsv"%(type), sep = "\t")
 		set_of_behavioral_predictors = literal_eval (results. loc [results. region == target_name, "selected_predictors"]. values[0])
 		set_of_behavioral_predictors  = [str (x) for x in set_of_behavioral_predictors]
 		# Transform temporal representation to regular names

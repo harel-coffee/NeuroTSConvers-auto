@@ -46,8 +46,8 @@ if __name__ == '__main__':
 
 	out_file = args. out_dir + conversation_name
 
-	'''if os.path.isfile (out_file + ".pkl"):
-		print ("files already exists")
+	'''if os.path.isfile (out_file + ".pkl") and pd.read_pickle  (out_file + ".pkl"). shape [0] > 0:
+		print ("Video already processed!")
 		exit (1)'''
 
 	# starting video streaming
@@ -86,6 +86,7 @@ if __name__ == '__main__':
 			color_face = bgr_image [y:y + h, x:x + w]
 			smiles = smile_cascade. detectMultiScale(gray_face, 1.8, 20)
 
+			print (smiles)
 			if len (smiles) > 0:
 				time_series. append ([current_time, 1])
 			else:
@@ -110,7 +111,7 @@ if __name__ == '__main__':
 	for i in range (1, 50):
 		index. append (1.205 + index [i - 1])
 
-	time_series = resampling. resample_ts (time_series, index, mode = "mode")
+	time_series = resampling. resample_ts (np. array (time_series), index, mode = "mode")
 
-	df = pd. DataFrame (time_series, columns = ["Time (s)", "dlib_smiles"])
+	df = pd. DataFrame (time_series, columns = ["Time (s)", "Smiles_I"])
 	df. to_pickle (out_file + '.pkl')

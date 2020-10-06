@@ -16,12 +16,11 @@ sys.stderr = open(os.devnull, 'w') # hide keras messages
 # local files
 from src.prediction.tools import *
 from src.prediction.training import *
-from src.concat_data import get_lagged_colnames
+from src.concat_time_series import get_lagged_colnames
 
 from src.feature_selection.reduction import gfsm_feature_selection, mi_ranking, mi_ranking_for_lstm
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
 
 #===========================================================
 def summarize_features_importance (features, importance):
@@ -36,7 +35,7 @@ def summarize_features_importance (features, importance):
 	df = pd.DataFrame ()
 
 	if len (importance) == 0:
-		return reduce_features, importance
+		return list (set (reduce_features)), importance
 
 
 	df ["feats"] = reduce_features
@@ -68,7 +67,7 @@ def run_fs_method (X_train, y_train, X_test, y_test, lagged_names, target_column
 		X_test_select = X_test [:,selected_indices]
 
 	elif method == "MI_RANK":
-		if model in ["LSTM", "CMLP"]:
+		if model in ["LSTM", "CMLP", "MLP"]:
 			selected_indices = mi_ranking_for_lstm (X_train, y_train, n_comp, lag - 2)
 		else:
 			selected_indices = mi_ranking (X_train, y_train, n_comp)
@@ -80,6 +79,7 @@ def run_fs_method (X_train, y_train, X_test, y_test, lagged_names, target_column
 		X_train_select = X_train. copy ()
 		X_test_select = X_test. copy ()
 		selected_indices = [i for i in range (X_train_select.shape[1])]
+
 	else:
 		X_train_select, X_test_select, selected_indices = specific_feature_selection (X_train, X_test, y_train, n_comp, method, model)
 
@@ -109,10 +109,10 @@ def parallel_fs_prediction (X_train, y_train, X_test, y_test, lagged_names, targ
 		make feature selection and prediction in parallel
 		by prediction in parallel the selected subsets of features
 	"""
-	if model in ["LSTM", "CMLP"]:
+	if model in ["LSTM", "CMLP", "MLP"]:
 		njobs = 1
 	else:
-		njobs = 7
+		njobs = 4
 
 	Parallel (n_jobs = njobs) (delayed (run_fs_method)
 	(X_train, y_train, X_test, y_test, lagged_names, target_column, lag, model, method, n_comp, find_params, type, filename)
@@ -135,9 +135,11 @@ def predict_area (behavioral_variables, target_column, model, lag, filename, fin
 		method = "None"
 		all = False
 
-	print ("Interaction: ", type)
-	print (target_column)
+	print (target_column, ',', type. lower ())
 
+	#if model in ["CMLP", "LSTM"]:
+	#y = pd. read_pickle ("concat_time_series/bold_%s_data.pkl"%str (type). lower ())
+	#else:
 	y = pd. read_pickle ("concat_time_series/discr_bold_%s_data.pkl"%str (type). lower ())
 
 	if target_column not in y.columns:
@@ -148,29 +150,29 @@ def predict_area (behavioral_variables, target_column, model, lag, filename, fin
 	if model == "baseline":# or all_m:
 		method = "None"
 
-	all_lagged_variables = [a for a in behavioral_variables. columns]
+	all_lagged_variables = list (behavioral_variables. columns)
 	set_of_behavioral_predictors = get_predictive_features_set (target_column, method, model, all, all_m, type)
 
-	# Split data into train and test set, where the test set is the last 20% of the data
-	if find_params or model in ["LSTM", "CMLP"]:
+
+	if find_params or model in ["LSTM", "CMLP", "MLP"]:
 		resample = 0
 	else:
 		resample = 1
 
-	if model == "baseline":
-		resample = 1
-
-	X_train_all, X_test_all, y_train, y_test = train_test_from_df (behavioral_variables, y, perc = 0.21, pos = 2, normalize = False, resample = resample)
+	# Split data into train and test set, where the test set is the last 20% of the data
+	X_train_all, X_test_all, y_train, y_test = train_test_from_df (behavioral_variables, y, perc = 0.25, pos = 3, normalize = False, resample = resample)
 
 	# A loop to test each set of predictive features
 	for set_of_predictors in set_of_behavioral_predictors:
-
-		lagged_names = get_lagged_colnames (set_of_predictors, lag)
+		if all:
+			lagged_names =  list (behavioral_variables. columns)
+		else:
+			lagged_names = get_lagged_colnames (set_of_predictors, lag)
 
 		for x in lagged_names:
 			if x not in all_lagged_variables:
 				print ("Warning, concat data do not contain",x)
-				exit (1)
+				lagged_names. remove (x)
 
 		X_train = X_train_all [:, get_indices (lagged_names, all_lagged_variables)]
 		X_test = X_test_all [:, get_indices (lagged_names, all_lagged_variables)]
@@ -180,12 +182,15 @@ def predict_area (behavioral_variables, target_column, model, lag, filename, fin
 			set_k = [X_train. shape [1]]
 
 		else:
-			if model in ["LSTM", "CMLP"]:
-				set_k = list (range (2, 20, 2))
-			elif method == "MI_RANK" and all_m:
-				set_k = list (range (1, 21, 1))
+			if model in ["LSTM", "MLP"] or find_params:
+				set_k = list (range (2, 20, 4))
+			elif all_m:
+				set_k = list (range (1, 31, 1))
+			elif all:
+				set_k = list (range (2, 61, 1))
 			else:
-				set_k = list (range (2, 21, 1))
+				set_k = list (range (1, 41, 1))
+
 
 		parallel_fs_prediction (X_train, y_train, X_test, y_test, lagged_names, target_column, lag, model, method, set_k, find_params, type, filename)
 
@@ -197,21 +202,24 @@ def predict_multiple_areas (_regions, lag, model, remove, _find_params, all, all
 
 	if _find_params:
 		colnames = ["region", "dm_method", "lag", "models_params", "predictors_dict",   "predictors_list", "selected_predictors",
-				"accuracy. mean",  "precision. mean", "fscore. mean",  "accuracy. std",  "precision. std",  "fscore. std", "K-Fscores"]
+				"accuracy. mean",  "recall. mean", "fscore. mean",  "accuracy. std",  "recall. std",  "fscore. std", "K-Fscores"]
 
 	else:
 		colnames = ["region", "dm_method", "lag", "models_params", "predictors_dict", "selected_predictors", "features_importance",
-				"accuracy. mean",  "precision. mean", "fscore. mean",   "accuracy. std",  "precision. std",  "fscore. std"]
+				"accuracy. mean",  "recall. mean", "fscore. mean",   "accuracy. std",  "recall. std",  "fscore. std"]
 
 	if _find_params:
 		filename_hh = "results/models_params/%s_HH.csv"%(model)
 		filename_hr = "results/models_params/%s_HR.csv"%(model)
+		tsv_files = [ "results/models_params/%s_HH.tsv"%(model),  "results/models_params/%s_HR.tsv"%(model)]
 
 	else:
 		filename_hh = "results/prediction/%s_HH.csv"%(model)
 		filename_hr = "results/prediction/%s_HR.csv"%(model)
 
-	for filename in [filename_hh, filename_hr]:
+		tsv_files = [ "results/prediction/%s_HH.tsv"%(model),  "results/prediction/%s_HR.tsv"%(model)]
+
+	for filename in [filename_hh, filename_hr] + tsv_files:
 		# remove previous output files if remove == true
 		if remove:
 			os. system ("rm %s"%filename)

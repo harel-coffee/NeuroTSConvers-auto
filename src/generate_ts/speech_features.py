@@ -4,12 +4,9 @@
 import numpy as np
 import pandas as pd
 
-'''import scipy.io.wavfile as wav
-from scipy.signal import hilbert, chirp  # for the envelope of the signal'''
 import spacy as sp
 
 import utils.tools as ts
-#from ..tools import plot_df
 
 import glob
 import os,sys,inspect
@@ -215,11 +212,7 @@ if __name__ == '__main__':
 		else:
 			conversation_name = "speech_features"
 
-	print ("---------", conversation_name, "---------")
-
-	#output_filename_png = out_dir +  conversation_name + ".png"
 	output_filename_pkl = out_dir +  conversation_name + ".pkl"
-
 
 	# Index variable
 	physio_index = [0.6025]
@@ -272,58 +265,27 @@ if __name__ == '__main__':
 
 	if args.left:
 		tier = tier_left
-		min_ipu = 0.01
+		min_ipu = 0.2
 		wav_file = left_wav_file
 	else:
 		tier = tier_right
-		min_ipu = 0.01
+		min_ipu = 0.2
 		wav_file = right_wav_file
 
-
-	#SpeechActivity = detect_speech_activity (wav_file)
+	# IPU
 	IPU, _ = ts. get_ipu (tier, 1)
-	#talk = ts. get_discretized_ipu (IPU, physio_index, 1)
-
 
 	#disc_SpeechActivity = sample_square (SpeechActivity, physio_index)
 	discretized_ipu_1 = sample_square (IPU, physio_index)
-	discretized_ipu_2 = sample_square (IPU, physio_index)
-	discretized_ipu_3 = sample_square (IPU, physio_index)
-	discretized_ipu_4 = sample_square (IPU, physio_index)
-
 
 	for i in range (len (discretized_ipu_1)):
-		'''if disc_SpeechActivity [i] <= 0.3:
-			disc_SpeechActivity [i] = 0
-		else:
-			disc_SpeechActivity [i] = 1'''
-
 		if discretized_ipu_1 [i] < min_ipu:
 			discretized_ipu_1 [i] = 0
 		else:
 			discretized_ipu_1 [i] = 1
 
-		if discretized_ipu_2 [i] < 0.2:
-			discretized_ipu_2 [i] = 0
-		else:
-			discretized_ipu_2 [i] = 1
-
-		if discretized_ipu_3 [i] < 0.3:
-			discretized_ipu_3 [i] = 0
-		else:
-			discretized_ipu_3 [i] = 1
-
-		if discretized_ipu_4 [i] < 0.4:
-			discretized_ipu_4 [i] = 0
-		else:
-			discretized_ipu_4 [i] = 1
-
-	# Overlap
-	overlap = ts. get_overlap (tier_left, tier_right)
-
-
 	# Joint Laugh: laugh overlap
-	joint_laugh = ts. get_joint_laugh (tier_left, tier_right, LAUGHTER_FORMS)
+	#joint_laugh = ts. get_joint_laugh (tier_left, tier_right, LAUGHTER_FORMS)
 
 	# recation time
 	if args. left:
@@ -358,9 +320,6 @@ if __name__ == '__main__':
 		laughters = ts. get_items_existence (tier_align, list_of_tokens =  LAUGHTER_FORMS)
 		main_particles_items = ts. get_items_existence (tier_align, list_of_tokens =  MAIN_PARTICLES_ITEMS)
 		socio_items = ts. get_items_existence (tier_align, list_of_tokens =  ALL_ITEMS)
-
-		#silence = ts. get_durations (tier_align, list_of_tokens = SILENCE)
-
 		# handle particle items separately as continuous time series
 		#main_particles_items = ts. get_particle_items (tier, nlp, list_of_tokens =  MAIN_PARTICLES_ITEMS)
 
@@ -370,24 +329,21 @@ if __name__ == '__main__':
 		main_discourse_items = ts. get_items_existence (tier_align, list_of_tokens =  MAIN_DISCOURSE_ITEMS_ENG)
 		laughters = ts. get_items_existence (tier_align, list_of_tokens =  LAUGHTER_FORMS)
 		main_particles_items = ts. get_items_existence (tier, list_of_tokens =  MAIN_PARTICLES_ITEMS_ENG)
-
 		# handle particle items separately as continuous time series """
 		#main_particles_items = ts. get_particle_items (tier, nlp, list_of_tokens =  MAIN_PARTICLES_ITEMS_ENG)
 
 	x_emotions, polarity, subejctivity = ts. emotion_ts_from_text (tier, nlp)
 
+	# Overlap
+	if args. left:
+		overlap = []
+	else:
+		overlap = ts. get_overlap (tier_left, tier_right)
+
 	# Time series dictionary
 	time_series = {
-				#"Signal": [signal_x, envelope],
-				#"SpeechActivity": SpeechActivity,
-				#"talk": talk,
-				#"Silence": silence,
 				"IPU": IPU,
 				"disc_IPU": discretized_ipu_1,
-				#"disc_SpeechActivity": disc_SpeechActivity,
-				"disc_IPU2": discretized_ipu_2,
-				"disc_IPU3": discretized_ipu_3,
-				"disc_IPU4": discretized_ipu_4,
 				"Overlap": overlap,
 				"ReactionTime":reaction_time,
 				"FilledBreaks":filled_breaks,
@@ -395,21 +351,23 @@ if __name__ == '__main__':
 				"Discourses":main_discourse_items,
 				"Particles":main_particles_items,
 				"Laughters":laughters,
-				"JointLaugh": joint_laugh,
 				"UnionSocioItems":socio_items,
-				"LexicalRichness1":richess_lex2,
-				"LexicalRichness2":richess_lex1,
+				"LexicalRichness":richess_lex2,
+				"TypeTokenRatio":richess_lex1,
 				"SpeechRate": speech_rate,
  				"Polarity": [x_emotions, polarity],
 				"Subjectivity": [x_emotions, subejctivity],
 				}
 
 	#labels = list (time_series. keys ())
-	labels = ["IPU", "disc_SpeechActivity", "disc_IPU", "disc_IPU2", "disc_IPU3", "disc_IPU4", "Overlap", "ReactionTime", "FilledBreaks", "Feedbacks", "Discourses",\
-				"Particles", "Laughters", "JointLaugh", "UnionSocioItems", "LexicalRichness1", "LexicalRichness2", "SpeechRate", "Polarity", "Subjectivity"]
+	labels = ["IPU", "disc_IPU", "Overlap", "ReactionTime", "FilledBreaks", "Feedbacks", "Discourses", "Particles", "Laughters"\
+			  ,"UnionSocioItems", "LexicalRichness", "TypeTokenRatio", "SpeechRate", "Polarity", "Subjectivity"]
+
+	if args.left:
+		# no need for overlap for bothe converssants
+		labels. remove ("Overlap")
 
 	markers = ['.' for i in range (len (labels))]
-
 
 	df = pd.DataFrame (index = physio_index)
 
@@ -435,11 +393,11 @@ if __name__ == '__main__':
 
 	if args.left:
 		for i in range (len (labels)):
-			labels [i] += "_left"
+			labels [i] += "_P"
+	else:
+		for i in range (len (labels)):
+			labels [i] += "_I"
 	df. columns = ["Time (s)"] + labels
 
 	# save data
 	df.to_pickle(output_filename_pkl)
-
-	#ts. plot_df (df, labels, output_filename_png, figsize=(12,9), y_lim = [0,1.2])
-	#ts. plot_time_series ([time_series[label] for label in labels], labels, colors[0:len (labels)], markers=markers,figsize=(20,16), figname = output_filename_1)

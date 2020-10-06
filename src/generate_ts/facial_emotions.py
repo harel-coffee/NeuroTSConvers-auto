@@ -68,9 +68,12 @@ if __name__ == '__main__':
 
 	print (conversation_name)
 
-	'''if os.path.isfile (out_file + ".pkl") and pd.read_pickle  (out_file + ".pkl"). shape [0] > 0:# and os.path.isfile (out_file + ".png"):
-		print ("files already exists")
-		exit (1)'''
+	if os.path.isfile (out_file + ".pkl") and pd.read_pickle  (out_file + ".pkl"). shape [0] > 0:# and os.path.isfile (out_file + ".png"):
+		'''df = pd.read_pickle  (out_file + ".pkl")
+		df. columns = ["Time (s)", 'Angry_I', 'Disgust_I', 'Fear_I', 'Happy_I','Sad_I', 'Surprise_I', 'Neutral_I']
+		df. to_pickle (out_file + '.pkl')'''
+		print ("Video already processed")
+		exit (1)
 
 	# hyper-parameters for bounding boxes shape
 	emotion_offsets = (20, 40)
@@ -94,7 +97,7 @@ if __name__ == '__main__':
 
 
 	emotions_states = {'angry': 0, 'disgust':0, 'fear':0, 'happy':0,'sad':0, 'surprise':0, 'neutral':0}
-	labels = ['angry', 'disgust', 'fear', 'happy','sad', 'surprise', 'neutral']
+	labels = ['angry', 'disgust', 'Fear', 'happy','sad', 'surprise', 'neutral']
 
 	# parameter initilization
 	columns = ['Time (s)'] + labels
@@ -184,4 +187,5 @@ if __name__ == '__main__':
 		time_series. append ([index[j]] + [set_of_emotions[emotion] for emotion in labels])
 
 	df = pd.DataFrame (time_series, columns = columns)
+	df. columns = ["Time (s)", 'Angry_I', 'Disgust_I', 'Fear_I', 'Happy_I','Sad_I', 'Surprise_I', 'Neutral_I']
 	df. to_pickle (out_file + '.pkl')

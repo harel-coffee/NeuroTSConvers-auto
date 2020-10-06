@@ -142,12 +142,13 @@ if __name__ == '__main__':
 		openface_file = args. facial_features
 		conversation_name = "facial_features_eyetracking"
 	else:
-		eye_tracking_file = "time_series/%s/gaze_coordinates_ts/%s.pkl"%(subject, conversation_name)
 		conversation_name = args. video.split ('/')[-1]. split ('.')[0]
-		openface_file = "time_series/%s/facial_features_ts/%s/%s.csv"%(subject, conversation_name, conversation_name)
+		eye_tracking_file = "time_series/%s/gaze_coordinates_ts/%s.pkl"%(subject, conversation_name)
+		openface_file = "time_series/%s/openface_features_ts/%s/%s.csv"%(subject, conversation_name, conversation_name)
 
 	out_file = args. out_dir + conversation_name
 	if os.path.isfile ("%s.pkl"%out_file):
+		print (out_file)
 		test_df = pd.read_pickle ("%s.pkl"%out_file)
 		if test_df. shape [0] == 50:
 			print ("Conversation already processed!")
@@ -274,17 +275,28 @@ if __name__ == '__main__':
 
 	# resampling data according the BOLD signal frequency
 	saccades = resampling. resample_ts (saccades, physio_index, mode = "sum")[:, 1:]
-	coordinates_resampled = resampling. resample_ts (eye_tracking_data, physio_index, mode = "mean")
+	#coordinates_resampled = resampling. resample_ts (eye_tracking_data, physio_index, mode = "mean")
 
 	# compute and resample the gradient of the gaze coordinates
 	coordinates_gradient = np. gradient (eye_tracking_data [:,1:3], eye_tracking_data [:,0], axis = 0)
-	coordinates_gradient = np. concatenate ((np. reshape (eye_tracking_data [:,0], (-1, 1)), coordinates_gradient), axis = 1)
-	coordinates_gradient = resampling. resample_ts (coordinates_gradient, physio_index, mode = "mean")[:, 1:]
 
-	# resample facial-time-series
-	face_time_series = resampling. resample_ts (face_time_series, physio_index, mode = "sum")[:, 1:]
+	# movement quantity
+	#movement_quantity = np. reshape (np. sqrt (np. sum (np. square (coordinates_gradient), axis = 1)), (-1, 1))
+	movement_quantity = np. concatenate ((np. reshape (eye_tracking_data [:,0], (-1, 1)), coordinates_gradient), axis = 1)
+
+
+	movement_quantity = resampling. resample_ts (movement_quantity, physio_index, mode = "energy", rotation = False, pixel = True)[:, 1:]
+
+	# mean of speed over axis X and Y
+	mean_x_y_gradient = np. reshape (np. mean (coordinates_gradient, axis = 1), (-1,1))
+	mean_x_y_gradient = np. concatenate ((np. reshape (eye_tracking_data [:,0], (-1, 1)), mean_x_y_gradient), axis = 1)
+	mean_x_y_gradient = resampling. resample_ts (mean_x_y_gradient, physio_index, mode = "mean")
+
+	# resample facial-time-series: face, mouth and eyes looks
+	face_time_series = resampling. resample_ts (np. array (face_time_series), physio_index, mode = "sum")[:, 1:]
 
 	# Concatenate all columns in one dataframe
-	output_time_series = pd.DataFrame (np. concatenate ((coordinates_resampled, coordinates_gradient, saccades, face_time_series), axis = 1),
-										columns = ["Time (s)", "x", "y", "Vx", "Vy", "saccades", "Face", "Mouth", "Eyes"])
+	output_time_series = pd.DataFrame (np. concatenate ((mean_x_y_gradient, movement_quantity, saccades, face_time_series), axis = 1),
+										columns = ["Time (s)", "Gaze_speed_P", "Gaze_movement_energy_P", "Saccades_P", "Face_looks_P", "Mouth_looks_P", "Eyes_looks_P"])
+
 	output_time_series.to_pickle (out_file + ".pkl")

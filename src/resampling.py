@@ -3,91 +3,137 @@ import math
 import scipy.stats as sc
 
 #========================================
-def compute_energy (x, rotation = False):
-    """
-        Compute the sum of squared differences: proportional to the kinetic enery of a variable
-        x: np array
-        rotation: if True  the values are considered as rotations in degree
-    """
+def compute_energy (x, rotation = False, pixel = True):
+	"""
+		Compute the sum of squared differences: this is proportional to the kinetic enery of a variable
+		x: np array, representing the speed, or the gradient vector
+		pixel: whether the coordinates are in pixel
+		rotation: if True  the values are considered as rotations in degree
+	"""
 
-    if len (x) == 1:
-        return 0
-    k_energy = 0
+	if (len (x) <= 1):
+		return 0
 
-    for i in range (x. shape [1]):
-        # if rotation is True, we transform rotations from degree to radian
-        if rotation:
-            vect = [math. radians (a) for a in x[:,i]]
-        else:
-            # convert pixel to mm
-            #vect = [a * 0.0002645833  for a in x[:,i]]
-            vect = [a * 0.2645833  for a in x[:,i]]
+	k_energy = 0
 
-        k_energy += np. sum (np. square (np. diff (vect)))
+	if pixel:
+		to_mm = 0.0002645833
+	else:
+		to_mm = 1
 
-    return k_energy
+	for i in range (x. shape [1]):
+		# if rotation is True, we transform rotations from degree to radian
+		if rotation:
+			#vect = [math. radians (a) for a in x[:,i]]
+			vect = [a for a in x[:,i]]
+		else:
+			# convert pixel to mm
+			vect = [a * to_mm  for a in x[:,i]]
+
+		k_energy += np. sum (np. square (vect))
+
+	return k_energy
 
 #==========================================
-def regroupe_data (list_, mode):
-    """
-        reducing a list of lists into one list by means of
-        mean, sum, std, mode, max, or binary
-    """
+def regroupe_data (list_, mode, rotation, pixel):
+	"""
+		reducing a list of lists into one list based on:
+		mean, sum, std, mode, max, or binary
+	"""
 
-    if mode == "mean":
-        return np.nanmean (list_, axis=0). tolist ()
-    elif mode == "sum":
-        return np. sum (list_, axis=0). tolist ()
-    elif mode == "std":
-        return np.std (list_, axis=0). tolist ()
-    elif mode == "max":
-        return np.nanmax (list_, axis=0). tolist ()
-    elif mode == "mode":
-        return sc.mode (list_, axis=0, nan_policy = 'omit')[0][0]. tolist ()
-    elif mode == "binary":
-        res = np.nanmean (list_, axis=0). tolist ()
-        for i in range (len (res)):
-            if res [i] > 0:
-                res [i] = 1
-            else:
-                res [i] = 0
-        return res
-    elif mode == "energy":
-        return [compute_energy (np. array (list_))]
+	if mode == "mean":
+		return np.nanmean (list_, axis=0). tolist ()
+	elif mode == "sum":
+		return np. sum (list_, axis=0). tolist ()
+	elif mode == "std":
+		return np.std (list_, axis=0). tolist ()
+	elif mode == "max":
+		return np.nanmax (list_, axis=0). tolist ()
+	elif mode == "mode":
+		return sc.mode (list_, axis=0, nan_policy = 'omit')[0][0]. tolist ()
+	elif mode == "binary":
+		res = np.nanmean (list_, axis=0). tolist ()
+		for i in range (len (res)):
+			if res [i] > 0:
+				res [i] = 1
+			else:
+				res [i] = 0
+		return res
+	elif mode == "energy":
+		return [compute_energy (np. array (list_), rotation, pixel)]
 
 
 #=============================================================
-def resample_ts (data, index, mode = "mean"):
+'''def resample_ts_old (data, index, mode = "mean", rotation = False, pixel = True):
 
-    """
-        Resampling a time series according to an index.
-        data : a list of lists (observations), or a 2D np array, representing the input time series.
-                the first column must contain the index of the data.
-        the data must contain an index in the first column
-        index : the new index (with smaller frequency compared to index of data)
-        return  an resampled numpy array
-    """
+	"""
+		Resampling a time series according to an index.
+		data : a list of lists (observations), or a 2D np array, representing the input time series.
+				the first column must contain the index of the data.
+		the data must contain an index in the first column
+		index : the new index (with smaller frequency compared to index of data)
+		return  an resampled numpy array
+	"""
 
-    resampled_ts = []
-    rows_ts = []
-    j = 0
+	resampled_ts = []
+	rows_ts = []
+	j = 0
 
-    for i in range (len (data)):
-    	if j >= len (index):
-    	    break
+	for i in range (len (data)):
+		if j >= len (index):
+			break
 
-    	if (data[i][0] > index [j]):
-    		if len (rows_ts) == 0:
-    			resampled_ts. append ([index [j]] + [0 for i in range (len (data [0][1:]) )])
-    		else:
-    			resampled_ts. append ([index [j]] + regroupe_data (rows_ts, mode))
-    		initializer = 0
-    		j += 1
-    		rows_ts = []
+		empty_line = [0 for i in range (len (data [0][1:]))]
+		if (data[i][0] > index [j]):
+			if len (rows_ts) == 0:
+				if mode == "energy":
+					resampled_ts. append ([index [j]] + [0])
+				else:
+					resampled_ts. append ([index [j]] + empty_line)
+			else:
+				resampled_ts. append ([index [j]] + regroupe_data (rows_ts, mode, rotation, pixel))
 
-    	rows_ts. append (data [i][1:])
+			initializer = 0
+			j += 1
+			rows_ts = []
 
-    if len (rows_ts) > 0 and j < len (index):
-        resampled_ts. append ([index [j]] + regroupe_data (rows_ts, mode))
+		if np.isnan (np.min(data [i][1:])):
+			rows_ts. append (empty_line)
+		else:
+			rows_ts. append (data [i][1:])
 
-    return np. array (resampled_ts)
+	if len (rows_ts) > 0 and j < len (index):
+		resampled_ts. append ([index [j]] + regroupe_data (rows_ts, mode, rotation, pixel))
+
+	return np. array (resampled_ts)'''
+
+#===================================================
+def resample_ts (timeSries, index, mode = "mean", rotation = False, pixel = True):
+	set_of_points = [[] for x in range (len (index))]
+	y = [[] for x in range (len (index))]
+
+	if timeSries. shape[1] < 2:
+		raise ("Input time series must have an index column in addition to other columns.")
+
+	if timeSries. shape[0] < 2:
+		raise ("Not enough observations in the input time series.")
+
+	for i in range (len (timeSries)):
+		if ((0 <= timeSries [i,0]) and (timeSries [i,0]) <= index [0]):
+			set_of_points [0]. append (timeSries [i, 1:])
+			continue
+		for j in range (0, len (index)):
+			if ((index [j - 1] < timeSries [i,0]) and (index [j] >= timeSries [i,0])):
+				set_of_points [j]. append (timeSries [i, 1:])
+				break
+
+	for j in range (0, len (y)):
+		if len (set_of_points[j]) > 0 and len (set_of_points[j][0]) > 0:
+			y[j] = regroupe_data (set_of_points[j], mode, rotation, pixel)
+		else:
+			if mode == "energy":
+				y[j] = [0]
+			else:
+				y[j] = [0 for i in range (1, timeSries. shape [1])]
+
+	return np. insert (np. array (y), 0, index, 1)

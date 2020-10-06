@@ -210,44 +210,25 @@ def rfe_reduction (train_, test_, percs, estimator_name = "RF"):
 #======================================================================================
 def manual_selection (region):
 
-	speech_ipu = {"speech_ts": ["IPU"]}
-	speech_left_ipu = {"speech_left_ts": ["IPU_left"]}
-	speech_left_disc_ipu = {"speech_left_ts": ["disc_IPU_left"]}
-	speech_disc_ipu = {"speech_ts": ["disc_IPU"]}
-	speech_disc_ipu_2 = {"speech_ts": ["disc_IPU_2"]}
-	speech_disc_ipu_3 = {"speech_ts": ["disc_IPU_3"]}
-	speech_disc_ipu_4 = {"speech_ts": ["disc_IPU_4"]}
+	speech_ipu = {"speech_ts": ["IPU_I"]}
+	speech_P_ipu = {"speech_P_ts": ["IPU_P"]}
+	speech_P_disc_ipu = {"speech_P_ts": ["disc_IPU_P"]}
+	speech_disc_ipu = {"speech_ts": ["disc_IPU_I"]}
 
-	speech_left_disc_ipu_2 = {"speech_left_ts": ["disc_IPU_2_left"]}
-	speech_left_disc_ipu_3 = {"speech_left_ts": ["disc_IPU_3_left"]}
-	speech_left_disc_ipu_4 = {"speech_left_ts": ["disc_IPU_4_left"]}
+	speech_items = {"speech_ts": ["IPU_I", "disc_IPU_I", "SpeechRate_I",\
+	 				"Overlap_I", "ReactionTime_I", "FilledBreaks_I", "Feedbacks_I", "Discourses_I",\
+					"Particles_I", "Laughters_I", "LexicalRichness_I", "TypeTokenRatio_I",\
+					 "UnionSocioItems_I"]}
 
-	disc_SpeechActivity_left = {"speech_left": ["disc_SpeechActivity_left"]}
-	SpeechActivity_left = {"speech_left": ["SpeechActivity_left"]}
+	speech_P_items = {"speech_P_ts": ["IPU_P", "disc_IPU_P", "SpeechRate_P",\
+	 					  "Overlap_P", "ReactionTime_P", "FilledBreaks_P", "Feedbacks_P", "Discourses_P", "Particles_P",\
+						   "Laughters_P", "LexicalRichness_P", "TypeTokenRatio_O", "UnionSocioItems_P"]}
 
-	disc_SpeechActivity = {"speech_left": ["disc_SpeechActivity"]}
-	SpeechActivity = {"speech_left": ["SpeechActivity"]}
+	if region in ["PMotor", "RightMotor"]:
+		set_of_behavioral_predictors = [speech_P_ipu, speech_P_disc_ipu, speech_P_items, merge_dict ([speech_P_ipu, speech_ipu])]
 
-	speech_items = {"speech_ts": ["SpeechActivity","disc_SpeechActivity", "IPU", "disc_IPU",\
-	 				"Overlap", "ReactionTime", "FilledBreaks", "Feedbacks", "Discourses",\
-					"Particles", "Laughters", "LexicalRichness1", "LexicalRichness2",\
-					 "Polarity", "Subjectivity", "UnionSocioItems"]}
-
-	speech_left_items = { "speech_left_ts": ["IPU_left", "SpeechActivity_left", "disc_SpeechActivity_left", "disc_IPU_left",\
-	 					  "Overlap_left", "ReactionTime_left", "FilledBreaks_left", "Feedbacks_left",\
-						  "Discourses_left", "Particles_left", "Laughters_left", "LexicalRichness1_left", "LexicalRichness2_left", "Polarity_left", "Subjectivity_left", "UnionSocioItems_left"]}
-
-	if region in ["LeftMotor", "RightMotor"]:
-		set_of_behavioral_predictors = [speech_left_ipu, speech_left_disc_ipu, speech_left_items, speech_left_disc_ipu_2, speech_left_disc_ipu_3,speech_left_disc_ipu_4,\
-		 								disc_SpeechActivity_left, SpeechActivity_left, merge_dict ([speech_left_ipu, speech_ipu])]
-
-	elif region in ["LeftSTS", "RightSTS", 'LeftDLPFC', 'RightDLPFC']:
-		set_of_behavioral_predictors = [speech_items, speech_disc_ipu, speech_ipu,  disc_SpeechActivity, SpeechActivity]
-
-	elif region in ["LeftFusiformGyrus", "RightFusiformGyrus"]:
-		set_of_behavioral_predictors =  [{"facial_features": ["dlib_smiles", "Smile", "mouth_AU","eyes_AU", "total_AU","AU01_r", "AU02_r", "AU6_r", "AU26_r", "head_rotation_energy", "head_translation_energy","gaze_angle_x","gaze_angle_y",\
-				  					"pose_Tx", "pose_Ty", "pose_Tz","pose_Rx", "pose_Ry", "pose_Rz",\
-									"angry", "disgust", "fear", "happy", "sad", "surprise", "neutral", "Vx", "Vy", "saccades", "Face", "Mouth", "Eyes"]}]
+	elif region in ["LeftSTS", "RightSTS"]:
+		set_of_behavioral_predictors = [speech_items, speech_disc_ipu, speech_ipu, merge_dict ([speech_P_ipu, speech_ipu])]
 
 	else:
 		print ("ERROR, ROI: %s has not been processed in reduction step!"%region)
