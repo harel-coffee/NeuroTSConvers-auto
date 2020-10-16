@@ -30,11 +30,11 @@ __This project is still under development.__
 
   ```bash
   # Generate time series from input data
-  python demo/generate_time_series.py -rg 1 2 3 4 -pmp .
+  python demo/generate_time_series.py -rg 3 4 7 8 9 10 21 -pmp .
   -in Demo -ofp "path to Openface"
 
   # Compute the predictions
-  python demo/predict.py -rg 1 2 3 4 -pmp . -in demo -t r
+  python demo/predict.py -rg 3 4 7 8 9 10 21 -pmp . -in demo -t r
 
   # Time series animation using the obtained predictions
   python demo/animation.py -in demo

@@ -41,12 +41,10 @@ if __name__ == '__main__':
 	requiredNamed. add_argument ('--input_dir','-in', help = "path of input directory")
 	args = parser.parse_args()
 
-	#colors = ["darkblue", "brown", "slategrey", "darkorange", "red", "grey","blue", "indigo", "darkgreen"]
-
 	# READ PREDICTIONS
 	df = pd. read_csv ("%s/Outputs/predictions.csv"%args.input_dir, sep = ';', header = 0, index_col = 0)
 	regions = list (df. columns)
-	print (regions)
+
 	index = df. index
 	title = 'Brain activity predictions'
 
@@ -54,8 +52,7 @@ if __name__ == '__main__':
 
 	colors_of_rois =  []
 	for region in regions:
-		colors_of_rois. append (ROIS_desc. loc [ROIS_desc["Name"] == region, "Color"]. values[0])
-
+		colors_of_rois. append (ROIS_desc. loc [ROIS_desc["ShortName"] == region, "Color"]. values[0])
 
 	for i in range (len (colors_of_rois)):
 		colors_of_rois[i] = literal_eval (colors_of_rois[i])[0:3]
@@ -84,7 +81,7 @@ if __name__ == '__main__':
 	legend_image = plt. figure (figsize = (3,5))
 
 
-	nb_to_region (regions)
+	#nb_to_region (regions)
 
 	for j in range (len (regions)):
 		ax [j]. set_xlim (np.min (index), np. max (index) + 1)

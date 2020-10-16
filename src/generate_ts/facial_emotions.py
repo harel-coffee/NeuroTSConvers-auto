@@ -44,34 +44,26 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
-	detection_model_path = 'src/utils/face_classification/trained_models/detection_models/haarcascade_frontalface_default.xml'
+	face_cascade = cv2.CascadeClassifier("src/utils/detection_models/haarcascades/haarcascade_frontalface_default.xml")
 	emotion_model_path = 'src/utils/face_classification/trained_models/fer2013_mini_XCEPTION.119-0.65.hdf5'
 	emotion_labels = get_labels('fer2013')
 
-	face_cascade = cv2.CascadeClassifier(detection_model_path)
-
 	if args. out_dir == 'None':
-	    usage ()
-	    exit ()
+		usage ()
+		exit ()
 
 	if args. out_dir[-1] != '/':
 	    args. out_dir += '/'
 
 	if args. demo:
-	    conversation_name = "facial_features_emotions"
+		conversation_name = "facial_features_emotions"
 	else:
 		# Input directory
 		conversation_name = args. video.split ('/')[-1]. split ('.')[0]
 
-
 	out_file = args. out_dir + conversation_name
 
-	print (conversation_name)
-
 	if os.path.isfile (out_file + ".pkl") and pd.read_pickle  (out_file + ".pkl"). shape [0] > 0:# and os.path.isfile (out_file + ".png"):
-		'''df = pd.read_pickle  (out_file + ".pkl")
-		df. columns = ["Time (s)", 'Angry_I', 'Disgust_I', 'Fear_I', 'Happy_I','Sad_I', 'Surprise_I', 'Neutral_I']
-		df. to_pickle (out_file + '.pkl')'''
 		print ("Video already processed")
 		exit (1)
 
@@ -97,7 +89,7 @@ if __name__ == '__main__':
 
 
 	emotions_states = {'angry': 0, 'disgust':0, 'fear':0, 'happy':0,'sad':0, 'surprise':0, 'neutral':0}
-	labels = ['angry', 'disgust', 'Fear', 'happy','sad', 'surprise', 'neutral']
+	labels = ['angry', 'disgust', 'fear', 'happy','sad', 'surprise', 'neutral']
 
 	# parameter initilization
 	columns = ['Time (s)'] + labels
@@ -154,6 +146,7 @@ if __name__ == '__main__':
 		if j >= 50:
 			break
 		if current_time >= index [j]:
+
 			time_series. append ([index [j]] + [set_of_emotions[emotion] for emotion in labels])
 			set_of_emotions = emotions_states. copy ()
 			j += 1
@@ -175,7 +168,6 @@ if __name__ == '__main__':
 
 			#cv2.rectangle(rgb_image, face, (0,165,255), 2)
 			draw_bounding_box(face, rgb_image, color)
-
 			draw_text(face, rgb_image, emotion_text, color, 0, -45, 1, 1)
 			bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
 			cv2.imshow('window_frame', bgr_image)

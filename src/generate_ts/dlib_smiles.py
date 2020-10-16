@@ -27,12 +27,12 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
-	face_cascade = cv2.CascadeClassifier("/home/youssef/opencv-4.1.2/data/haarcascades/haarcascade_frontalface_default.xml")
+	face_cascade = cv2.CascadeClassifier("src/utils/detection_models/haarcascades/haarcascade_frontalface_default.xml")
 	smile_cascade = cv2.CascadeClassifier('/home/youssef/opencv-4.1.2/data/haarcascades/haarcascade_smile.xml')
 
 	if args. out_dir == 'None':
-	    usage ()
-	    exit ()
+		usage ()
+		exit ()
 
 	if args. out_dir[-1] != '/':
 	    args. out_dir += '/'
@@ -46,9 +46,9 @@ if __name__ == '__main__':
 
 	out_file = args. out_dir + conversation_name
 
-	'''if os.path.isfile (out_file + ".pkl") and pd.read_pickle  (out_file + ".pkl"). shape [0] > 0:
+	if os.path.isfile (out_file + ".pkl") and pd.read_pickle  (out_file + ".pkl"). shape [0] > 0:
 		print ("Video already processed!")
-		exit (1)'''
+		exit (1)
 
 	# starting video streaming
 	video_capture = cv2.VideoCapture(args.video)
@@ -86,7 +86,6 @@ if __name__ == '__main__':
 			color_face = bgr_image [y:y + h, x:x + w]
 			smiles = smile_cascade. detectMultiScale(gray_face, 1.8, 20)
 
-			print (smiles)
 			if len (smiles) > 0:
 				time_series. append ([current_time, 1])
 			else:

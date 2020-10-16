@@ -8,12 +8,13 @@ from prediction. tools import *
 from sklearn import preprocessing
 from ast import literal_eval
 
-from joblib import Parallel, delayed
+import joblib
+#from joblib import Parallel, delayed
 
 import warnings
 warnings.filterwarnings("ignore")
 
-from sklearn.externals import joblib
+#from sklearn.externals import joblib
 
 from sklearn import linear_model
 from sklearn.ensemble import RandomForestClassifier
@@ -22,7 +23,7 @@ from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from prediction. lstm import *
 
-from imblearn.over_sampling import ADASYN
+#from imblearn.over_sampling import ADASYN
 
 import argparse
 
@@ -74,21 +75,19 @@ def train_model_area (X, y, target_column, convers_type):
 		y: dataframe one column, the target variable
 	"""
 
-
 	print ("\n\nProcessing ROI: %s ...."%target_column)
-	""" extract best model, and the best parameters founded based on fscore measure """
+	""" extract best model, and the best parameters founded based on fscore measure"""
 	prediction_files = glob. glob ("results/prediction/*%s.tsv"%convers_type)
 	best_score = 0
 
 	for filename in prediction_files:
-
-		if "LSTM" in filename or "LREG" in filename:
+		if "LSTM" in filename or "MLP" in filename  or "baseline" in filename:
 			continue
+
 		model_name = filename. split ('/')[-1]. split ('_') [0]
 		pred_data = pd.read_csv (filename,  sep = '\t', header = 0, na_filter = False, index_col = False)
 
 		pred_data =  pred_data. loc [pred_data ["region"] == target_column]
-
 		if (pred_data. shape [0] == 0):
 			continue
 
@@ -102,34 +101,18 @@ def train_model_area (X, y, target_column, convers_type):
 
 	#selected_features =  best_results ["selected_indices"]
 	selected_features  = literal_eval (best_results ["selected_predictors"])
-
 	best_behavioral_predictors = get_features_from_lagged (selected_features)
-
-
-	'''try:
-		best_behavioral_predictors = literal_eval (best_results ["predictors_dict"])
-	except:
-		best_behavioral_predictors = best_results ["predictors_dict"]
-		pass'''
-
-
 	best_model_params = literal_eval (best_results ["models_params"]. replace("'", '"'))
-
-
-	#lagged_names = get_lagged_colnames (best_behavioral_predictors, args. lag)
-
-	#selected_indices = [lagged_names. index (col) for col in selected_features]
-
 
 	# feature selection using the founded indices
 	X_train = X. loc[:, selected_features]
 
 	# balance the data with ADASYN
-	try:
+	'''try:
 		X_train, y =  ADASYN (random_state=5). fit_resample (X_train.values, y. values. flatten ())
 	except:
 		X_train, y = X_train.values, y. values. flatten ()
-		pass
+		pass'''
 
 	# Train the model
 	print ("Best model: %s"%best_model)
@@ -144,18 +127,14 @@ def train_model_area (X, y, target_column, convers_type):
 
 #====================================================================#
 
-def train_all (X, Y, regions, type = "HH"):
+def train_all (X, Y, regions, short_regions, type = "HH"):
 
 	output = []
-	for target_column in regions:
-		best_model, features = train_model_area (X, Y. loc [:, target_column], target_column, type)
-		output. append ([target_column, best_model, features])
+	for target_column, short_target_column in zip (regions, short_regions):
+		best_model, features = train_model_area (X, Y. loc [:, target_column], short_target_column, type)
+		output. append ([short_target_column, best_model, features])
 
 	return pd.DataFrame (output, columns = ["ROI", "Prediction model", "Predictive Features"])
-
-	# Predict HH  and HR conversations separetely
-	#Parallel (n_jobs = 1) (delayed (train_model_area) (X, Y. loc [:, target_column], target_column, type)
-									#for target_column in regions)
 
 if __name__=='__main__':
 	# read arguments
@@ -177,10 +156,11 @@ if __name__=='__main__':
 	# get regions names for their codes
 	brain_areas_desc = pd. read_csv ("brain_areas.tsv", sep = '\t', header = 0)
 	brain_areas = []
+	short_brain_areas = []
 
 	for num_region in args. regions:
 		brain_areas. append (brain_areas_desc . loc [brain_areas_desc ["Code"] == num_region, "Name"]. values [0])
-
+		short_brain_areas. append (brain_areas_desc . loc [brain_areas_desc ["Code"] == num_region, "ShortName"]. values [0])
 
 	# Read training data for human-human and human-robot
 	X_hh = pd. read_pickle ("concat_time_series/behavioral_hh_data.pkl")
@@ -190,19 +170,19 @@ if __name__=='__main__':
 	Y_hr = pd. read_pickle ("concat_time_series/discr_bold_hr_data.pkl")
 
 	# Train the models for each brain area
-	results_hh = train_all (X_hh, Y_hh, brain_areas, "HH")
-	results_hr = train_all (X_hr, Y_hr, brain_areas, "HR")
+	results_hh = train_all (X_hh, Y_hh, brain_areas, short_brain_areas, "HH")
+	results_hr = train_all (X_hr, Y_hr, brain_areas, short_brain_areas, "HR")
 
-	print (results_hh)
-	print (results_hr)
+	#print (results_hh)
+	#print (results_hr)
 
-	df = pd. concat ([results_hh, results_hr. iloc[:,1:]], axis = 1)
+	'''df = pd. concat ([results_hh, results_hr. iloc[:,1:]], axis = 1)
 	header1 = ["ROIS"] + ["Human-Human", "Human-Machine"] +  ["Human-Human", "Human-Machine"]
 	header2 = ["ROIS"] + ["Best model", "Features"] +  ["Best model", "Features"]
 
 
 	df. columns = [np. array (header1), np. array (header2)]
-	print (df)
+	print (df)'''
 	#print(df.to_latex(index=False, multirow = True))
 
 	'''latex = df.to_latex(index=False, multirow = True)

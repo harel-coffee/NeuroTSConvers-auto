@@ -11,9 +11,14 @@ import numpy as np
 import joblib
 import argparse
 from ast import literal_eval
-import sys
+import sys, inspect
 
 from sklearn.metrics import recall_score, precision_score, f1_score, average_precision_score
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(3,parentdir)
+from src.normalizer import normalizer
 
 class toSuppervisedData:
 	targets = np.empty([0,0],dtype=float)
@@ -130,6 +135,14 @@ if __name__ == '__main__':
     if args. pred_module_path [-1] == '/':
     	args. pred_module_path = args. pred_module_path [:-1]
 
+    if args. type == 'h':
+    	conversation_type = 'HH'
+    elif args. type == 'r':
+    	conversation_type = 'HR'
+    else:
+    	print ("Error in arguments, type of conversation missing, use -h for help!")
+    	exit (1)
+
     out_dir =  "%s/Outputs/generated_time_series/"%args.input_dir
 
     # GET REGIONS NAMES FOR THEIR CODES
@@ -137,11 +150,16 @@ if __name__ == '__main__':
 
     regions = []
     for num_region in args. regions:
-    	regions. append (brain_areas_desc . loc [brain_areas_desc ["Code"] == num_region, "Name"]. values [0])
+    	regions. append (brain_areas_desc . loc [brain_areas_desc ["Code"] == num_region, "ShortName"]. values [0])
 
     # WRIGHT MULTIMODAL TIME SERIES TO CSV FILE
     all_data = pd. read_csv ("%s/Outputs/generated_time_series/features.csv"%args.input_dir, sep = ';', header = 0)
     columns = all_data. columns
+
+    # Normalize the data based in min-max scaler of training data
+    min_max_scaler = normalizer (all_data)
+    min_max_scaler. load ("trained_models/min_max_scaler_%s.pickle"%conversation_type.lower ())
+    all_data = min_max_scaler. transform (all_data)
 
     print ("0")
     lagged_names = []
@@ -150,14 +168,7 @@ if __name__ == '__main__':
 
     all_data = pd. DataFrame (toSuppervisedData (all_data. values, args. lag). data, columns = lagged_names)
 
-    """ load the best models for each regions """
-    if args. type == 'h':
-    	conversation_type = 'HH'
-    elif args. type == 'r':
-    	conversation_type = 'HR'
-    else:
-    	print ("Error in arguments, type of conversation missing, use -h for help!")
-    	exit (1)
+
 
     trained_models = glob. glob ("%s/trained_models/*%s.pkl"%(args.pred_module_path,conversation_type))
 
@@ -177,7 +188,6 @@ if __name__ == '__main__':
         		break
 
         model_name = fname. split ('/')[-1]. split ('_') [0]
-        #print (model_name)
         model = joblib. load (fname)
 
         predictors = literal_eval (get_predictors_dict (model_name, region, args. type, args.pred_module_path))

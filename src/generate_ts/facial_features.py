@@ -17,8 +17,33 @@ resampling_spec = importlib.util.spec_from_file_location("resampling", "%s/src/r
 resampling = importlib.util.module_from_spec(resampling_spec)
 resampling_spec.loader.exec_module(resampling)
 
+#===================================================
+def moving_average(n_signal, periods=3):
+
+	if n_signal. shape[1] == 0 or n_signal. shape [0] == 0:
+		raise ("moving_average def, input signal emtpy or not n-dimmensional.")
+
+	weights = np.ones(periods) / periods
+	res = np.convolve(n_signal[:,0], weights, mode='valid'). reshape ((-1,1))
+
+	for j in range (1, n_signal. shape [1]):
+		res = np. insert (res, res. shape [1], np.convolve(n_signal[:,j], weights, mode='valid'), axis = 1)
+
+	return res
+
 #================================================#
 if __name__ == '__main__':
+	'''data = [1, 2, 3, 6, 9, 12, 20, 28, 30, 25, 22, 20, 15, 12, 10]
+	a = np. array (data). reshape ((-1,1))
+	a = np. insert (a, 1, [a * 2 for a in data], axis = 1)
+	print (a)
+
+	print (a. shape)
+	ma = moving_average (np.asarray (a), 3)
+	print (np.around(ma, decimals=2))
+
+	print (ma. shape)
+	exit (1)'''
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument("video", help = "the path of the video to process.")
@@ -28,12 +53,12 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	if args. out_dir[-1] != '/':
-	    args. out_dir += '/'
+		args. out_dir += '/'
 
 	# This for an independant utilization of the script (outisde the experiment videos)
 	if args. demo:
-	    openface_file = args. facial_features
-	    conversation_name = "facial_features_energy"
+		openface_file = args. facial_features
+		conversation_name = "facial_features_energy"
 	else:
 		# subject number from video path
 		subject = args. video.split ('/')[-2]
@@ -44,15 +69,15 @@ if __name__ == '__main__':
 	out_file = args. out_dir + conversation_name
 
 	# check if file already processed
-	if os.path.exists (out_file + '.pkl'):
+	'''if os.path.exists (out_file + '.pkl'):
 		print (out_file)
 		print ("Warning, file already processed")
-		exit (1)
+		exit (1)'''
 
 	# check if feature extraction (openface) has been processed
 	if not os.path.exists (openface_file):
-	    print ("Error, file %s does not exists"%openface_file)
-	    exit (1)
+		print ("Error, file %s does not exists"%openface_file)
+		exit (1)
 
 	# The index of BOLD signal
 	physio_index = [0.6025]
@@ -61,47 +86,103 @@ if __name__ == '__main__':
 
 	# read  openface file
 	openface_data = pd. read_csv (openface_file, sep = ',', header = 0)
+	openface_data = openface_data[openface_data[" success"] == 1]
 
 	# feature extraction
-	video_index = openface_data. loc [:," timestamp"]. values[1:]
+	video_index = openface_data. loc [:," timestamp"]. values
 
 	# First part of the variables
 	df1 = pd.DataFrame ()
 	df1 ["Time (s)"] = openface_data [" timestamp"]. values
-	df1 ["mouth_AU"] = openface_data. loc [:,[" AU10_r", " AU12_r"," AU14_r"," AU15_r"," AU17_r"," AU20_r", " AU23_r", " AU25_r", " AU26_r"]]. sum (axis = 1)
-	df1["eyes_AU"] = openface_data. loc [:, [" AU01_r", " AU02_r", " AU04_r", " AU05_r", " AU06_r", " AU07_r", " AU09_r"]]. sum (axis = 1)
-	df1["total_AU"] = df1 ["mouth_AU"] + df1 ["eyes_AU"]
-	df1["AU12_r"] = openface_data [" AU12_r"]
-	df1["AU6_r"] = openface_data [" AU06_r"]
-	df1["AU26_r"] = openface_data [" AU26_r"]
-	df1["AU01_r"] = openface_data [" AU01_r"]
-	df1["AU02_r"] = openface_data [" AU02_r"]
-
-	df1["gaze_angle_x"] =  openface_data. loc [:, [" gaze_angle_x"]]
-	df1["gaze_angle_y"] =  openface_data. loc [:, [" gaze_angle_y"]]
+	df1 ["AUs_mouth_I"] = openface_data. loc [:,[" AU10_c", " AU12_c"," AU14_c"," AU15_c"," AU17_c"," AU20_c", " AU23_c", " AU25_c", " AU26_c"]]. sum (axis = 1)
+	df1["AU_eyes_I"] = openface_data. loc [:, [" AU01_c", " AU02_c", " AU04_c", " AU05_c", " AU06_c", " AU07_c", " AU09_c"]]. sum (axis = 1)
+	df1["AU_all_I"] = df1 ["AUs_mouth_I"] + df1 ["AU_eyes_I"]
+	'''df1["AU12"] = openface_data [" AU12_c"]
+	df1["AU6"] = openface_data [" AU06_c"]
+	df1["AU26"] = openface_data [" AU26_c"]
+	df1["AU01"] = openface_data [" AU01_c"]
+	df1["AU02"] = openface_data [" AU02_c"]'''
 
 	# resampling
 	output_time_series = pd.DataFrame (resampling. resample_ts (df1. values, physio_index, mode = "mean"), columns = df1.columns)
 
-	# head positions
-	head_positions = openface_data. loc [:,[" timestamp", " pose_Tx", " pose_Ty", " pose_Tz", " pose_Rx", " pose_Ry"," pose_Rz"]]
-	head_positions = resampling. resample_ts (head_positions.values, physio_index, mode = "mean")
-	output_time_series["pose_Tx"] = head_positions [:,1]
-	output_time_series["pose_Ty"] = head_positions [:,2]
-	output_time_series["pose_Tz"] = head_positions [:,3]
-	output_time_series["pose_Rx"] = head_positions [:,4]
-	output_time_series["pose_Ry"] = head_positions [:,5]
-	output_time_series["pose_Rz"] = head_positions [:,6]
+	# direct gaze
+	direct_gaze_brut = openface_data. loc [:,[" timestamp"," gaze_angle_x", " gaze_angle_y"]]. values
+	direct_gaze = moving_average (direct_gaze_brut, 30)
+	# Re-add the first 29 observations lost by moving average
+	for i in range (29):
+		direct_gaze = np. insert (direct_gaze, i, direct_gaze_brut[i], axis = 0)
 
-	# head movment energy
-	head_translation = openface_data. loc [:, [" timestamp", " pose_Tx", " pose_Ty", " pose_Tz"]]
-	head_rotation = openface_data. loc [:, [" timestamp", " pose_Rx", " pose_Ry"," pose_Rz"]]
-	head_translation_energy = resampling. resample_ts (head_translation. values, physio_index, mode = "energy")
-	head_rotation_energy = resampling. resample_ts (head_rotation. values, physio_index, mode = "energy")
+	direct_gaze[:,1] = direct_gaze[:,1] - np. mean (direct_gaze[:,1])
+	direct_gaze[:,2] = direct_gaze[:,2] - np. mean (direct_gaze[:,2])
+
+	for i in range (len (direct_gaze)):
+		direct_gaze[i,1] = np. sqrt (direct_gaze[i,1]**2 + direct_gaze[i,2]**2)
+		if direct_gaze[i,1] < 0.05:
+			direct_gaze[i,1] = 1
+		else:
+			direct_gaze[i,1] = 0
+
+	direct_gaze = np. delete (direct_gaze, 2, 1)
+	direct_gaze = resampling. resample_ts (direct_gaze, physio_index, mode = "mean")
+	output_time_series["Direct_gaze_I"] = direct_gaze[:,1]
+
+	# head positions
+	head_positions = openface_data. loc [:,[" timestamp", " pose_Tx", " pose_Ty", " pose_Rx", " pose_Ry"]]
+
+	# very specific to our corpus: the robot is fix, we force detected variables to be constant
+	conv_type = conversation_name. split ('_')[-2]
+	if conv_type == "CONV2":
+		for j in range (1, 5):
+			head_positions. iloc [:,j] = 0
+		output_time_series. loc [:, "Direct_gaze_I"] = 1
+
+	else:
+		# stabilize openface errors
+		for j in range (1, 5):
+			min_ = head_positions. iloc [3:,j]. min ()
+			max_ = head_positions. iloc [3:,j]. max ()
+
+			if j < 3:
+				# translation (pixels)
+				seuil = 20
+			elif j < 5:
+				# rotation
+				seuil = 0.2
+
+			if ((max_ - min_) <= seuil):
+				head_positions. iloc [:,j] = 0
+
+	#head_positions_diff = np. diff (head_positions. iloc[:,1:]. values, axis = 0)
+	#head_positions_diff = np. insert (head_positions_diff, 0, video_index[1:], axis = 1)
+
+	head_positions_diff = np. gradient (head_positions.values[1:,1:], video_index[1:], axis = 0)
+	head_positions_diff = np. insert (head_positions_diff, 0, video_index[1:], axis = 1)
+
+	#head_positions_diff = head_positions. values
+	head_positions_diff = resampling. resample_ts (head_positions_diff, physio_index, mode = "sum")
+
+	output_time_series["Head_Tx_I"] = head_positions_diff [:,1]
+	output_time_series["Head_Ty_I"] = head_positions_diff [:,2]
+
+	output_time_series["Head_Rx_I"] = head_positions_diff [:,3]
+	output_time_series["Head_Ry_I"] = head_positions_diff [:,4]
+
+	# head movment gradient
+	head_translation = np. gradient (head_positions. loc [:, [" pose_Tx", " pose_Ty"]]. values[1:,:], video_index[1:], axis = 0)
+	head_rotation = np. gradient (head_positions. loc [:, [" pose_Rx", " pose_Ry"]]. values[1:,:], video_index[1:], axis = 0)
+
+	# add timestamp as first column
+	head_translation = np. insert (head_translation, 0, video_index[1:], axis = 1)
+	head_rotation = np. insert (head_rotation, 0, video_index[1:], axis = 1)
+
+	head_translation_energy = resampling. resample_ts (head_translation, physio_index, mode = "energy",  rotation = False, pixel = True)
+	head_rotation_energy = resampling. resample_ts (head_rotation, physio_index,  mode = "energy", rotation = True, pixel = False)
 
 	# concatenate all columns
-	output_time_series["head_rotation_energy"] = head_rotation_energy [:,1]
-	output_time_series["head_translation_energy"] = head_translation_energy [:,1]
+	output_time_series["Head_rotation_energy_I"] = head_rotation_energy[:,1] #without index
+	output_time_series["Head_translation_energy_I"] = head_translation_energy[:,1]
 
+	#print (output_time_series)
 	# save data in pickle file
 	output_time_series.to_pickle (out_file + ".pkl")

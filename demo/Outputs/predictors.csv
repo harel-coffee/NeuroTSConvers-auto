@@ -1,2 +1,2 @@
-LeftMotor;RightMotor;LeftSTS;RightSTS
-disc_IPU_left;disc_IPU_left;disc_IPU;disc_IPU
+lSTS;rSTS;lPc;rPc;lTPJ;rTPJ;rMPFC
+IPU_I,Overlap_I;IPU_I,IPU_P;disc_IPU_P,Saccades_P,Feedbacks_P,Smiles_I,IPU_I,ReactionTime_P,Face_looks_P,UnionSocioItems_P,Mouth_looks_P,LexicalRichness_P,Eyes_looks_P,SpeechRate_P,SpeechRate_I,Sad_I,Happy_I,IPU_P;disc_IPU_P,Saccades_P,Neutral_I,AU_eyes_I,IPU_P;Saccades_P,Polarity_P,TypeTokenRatio_P,IPU_P,IPU_I,AUs_mouth_I,ReactionTime_P,ReactionTime_I,Mouth_looks_P,SpeechRate_I,AU_eyes_I,Neutral_I,Gaze_speed_P,LexicalRichness_P,AU_all_I,Gaze_movement_energy_P,Face_looks_P,Eyes_looks_P,SpeechRate_P,Happy_I;IPU_P;Saccades_P,Polarity_P,TypeTokenRatio_P,IPU_P,IPU_I,AUs_mouth_I,ReactionTime_P,SpeechRate_I,disc_IPU_I,AU_eyes_I,disc_IPU_P,Neutral_I,LexicalRichness_I,Gaze_speed_P,LexicalRichness_P,AU_all_I,Gaze_movement_energy_P,Eyes_looks_P,SpeechRate_P,TypeTokenRatio_I,Happy_I

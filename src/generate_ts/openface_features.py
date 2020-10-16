@@ -14,7 +14,6 @@ resampling_spec = importlib.util.spec_from_file_location("resampling", "%s/src/r
 resampling = importlib.util.module_from_spec(resampling_spec)
 resampling_spec.loader.exec_module(resampling)
 
-
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 def usage():
