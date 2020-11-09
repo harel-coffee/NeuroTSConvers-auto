@@ -72,7 +72,7 @@ def transform_test_data_modalities (test_data, modalities, selectors, method = "
 	for [begin, end], selector in zip (modalities, selectors):
 		if selector is None:
 			X_modality = test_data [:, begin: end]
-		elif method in ["PCA", "KPCA", "IPCA", "TREE"]:
+		elif method in ["PCA", "KPCA", "IPCA", "Model_RANK"]:
 			X_modality = selector. transform (test_data [:, begin: end])
 		elif method in ["RFE"]:
 			X_modality = selector. predict (test_data [:, begin: end])
@@ -104,7 +104,7 @@ def generic_reduction (X, y, method,  n_comps = 0, estimator_name = "RF"):
 	elif method == "RFE":
 	    return ref_local (X, y, n_comps, estimator_name)
 
-	elif method == "TREE":
+	elif method == "Model_RANK":
 		#clf = LogisticRegression()
 		params = params = {'bootstrap': True, 'max_depth': 100, 'max_features': 'auto', 'n_estimators': 100, 'random_state': 5}
 		clf = RandomForestClassifier (**params)

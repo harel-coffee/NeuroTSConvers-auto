@@ -63,50 +63,6 @@ def regroupe_data (list_, mode, rotation, pixel):
 		return [compute_energy (np. array (list_), rotation, pixel)]
 
 
-#=============================================================
-'''def resample_ts_old (data, index, mode = "mean", rotation = False, pixel = True):
-
-	"""
-		Resampling a time series according to an index.
-		data : a list of lists (observations), or a 2D np array, representing the input time series.
-				the first column must contain the index of the data.
-		the data must contain an index in the first column
-		index : the new index (with smaller frequency compared to index of data)
-		return  an resampled numpy array
-	"""
-
-	resampled_ts = []
-	rows_ts = []
-	j = 0
-
-	for i in range (len (data)):
-		if j >= len (index):
-			break
-
-		empty_line = [0 for i in range (len (data [0][1:]))]
-		if (data[i][0] > index [j]):
-			if len (rows_ts) == 0:
-				if mode == "energy":
-					resampled_ts. append ([index [j]] + [0])
-				else:
-					resampled_ts. append ([index [j]] + empty_line)
-			else:
-				resampled_ts. append ([index [j]] + regroupe_data (rows_ts, mode, rotation, pixel))
-
-			initializer = 0
-			j += 1
-			rows_ts = []
-
-		if np.isnan (np.min(data [i][1:])):
-			rows_ts. append (empty_line)
-		else:
-			rows_ts. append (data [i][1:])
-
-	if len (rows_ts) > 0 and j < len (index):
-		resampled_ts. append ([index [j]] + regroupe_data (rows_ts, mode, rotation, pixel))
-
-	return np. array (resampled_ts)'''
-
 #===================================================
 def resample_ts (timeSries, index, mode = "mean", rotation = False, pixel = True):
 	set_of_points = [[] for x in range (len (index))]

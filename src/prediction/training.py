@@ -131,12 +131,8 @@ def  train_model (data, model, params, lag):
 			pred_model = LSTM_MODEL (lag - 2)
 			pred_model. fit (data [:, 1:], data[:, 0])
 
-		elif model == "CMLP":
-			pred_model = CMLP (lag - 2)
-			pred_model. fit (data [:, 1:], data[:, 0])
-
 		elif model == "MLP":
-			pred_model = MLP (lag - 2)
+			pred_model = MLP_MODEL (lag - 2)
 			pred_model. fit (data [:, 1:], data[:, 0])
 
 		else:

@@ -21,12 +21,10 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import GradientBoostingClassifier
-from prediction. lstm import *
-
+#from prediction. lstm import *
 #from imblearn.over_sampling import ADASYN
 
 import argparse
-
 
 def get_features_from_lagged (lagged_variables):
 	features = set (['_'. join (a.split ('_')[0:-1]) for a in lagged_variables])
@@ -37,8 +35,10 @@ def get_features_from_lagged (lagged_variables):
 def  train_model (X, y, model, params):
 
 	if model == "LSTM":
-		pred_model = fit_lstm (X, y, lag = 4,  params = params)
+		pred_model = LSTM_MODEL (lag - 2)
 
+	elif model == "MLP":
+		pred_model = MLP_MODEL (lag - 2)
 	else:
 		if model == "SGD":
 			pred_model = SGDClassifier (**params)
@@ -64,7 +64,7 @@ def  train_model (X, y, model, params):
 		elif model in ["random", "baseline"]:
 			pred_model = DummyClassifier (**params)
 
-		pred_model. fit (X, y)
+	pred_model. fit (X, y)
 
 	return pred_model
 
@@ -137,21 +137,13 @@ def train_all (X, Y, regions, short_regions, type = "HH"):
 	return pd.DataFrame (output, columns = ["ROI", "Prediction model", "Predictive Features"])
 
 if __name__=='__main__':
-	# read arguments
 	parser = argparse. ArgumentParser ()
-	parser. add_argument ("--remove", "-rm", help = "remove previous files", action = "store_true")
 	parser. add_argument ('--regions','-rg', nargs = '+', type=int)
-
 	args = parser.parse_args()
-	print (args)
 
 	# create output folder if not exist
 	if not os. path. exists ("trained_models"):
 		os. makedirs ("trained_models")
-	else:
-		# remove old results if specified in argument
-		if args. remove:
-			os. system ("rm trained_models/*")
 
 	# get regions names for their codes
 	brain_areas_desc = pd. read_csv ("brain_areas.tsv", sep = '\t', header = 0)
@@ -172,20 +164,3 @@ if __name__=='__main__':
 	# Train the models for each brain area
 	results_hh = train_all (X_hh, Y_hh, brain_areas, short_brain_areas, "HH")
 	results_hr = train_all (X_hr, Y_hr, brain_areas, short_brain_areas, "HR")
-
-	#print (results_hh)
-	#print (results_hr)
-
-	'''df = pd. concat ([results_hh, results_hr. iloc[:,1:]], axis = 1)
-	header1 = ["ROIS"] + ["Human-Human", "Human-Machine"] +  ["Human-Human", "Human-Machine"]
-	header2 = ["ROIS"] + ["Best model", "Features"] +  ["Best model", "Features"]
-
-
-	df. columns = [np. array (header1), np. array (header2)]
-	print (df)'''
-	#print(df.to_latex(index=False, multirow = True))
-
-	'''latex = df.to_latex(index=False, multirow = True)
-	file = open ("table.txt", mode = 'w')
-	file. write (latex)
-	file. close ()'''

@@ -45,14 +45,14 @@ if __name__ == '__main__':
 	out_file = args. out_dir + conversation_name
 
 	# verify if the file already exists
-	if os.path.isfile ("%s.pkl"%out_file) and os.path.exists ("%s"%out_file):
+	'''if os.path.isfile ("%s.pkl"%out_file) and os.path.exists ("%s"%out_file):
 		test_df = pd.read_pickle ("%s.pkl"%out_file)
 		csv_df = pd.read_csv ("%s/%s.csv"%(out_file, conversation_name), sep = ',', header = 0)
 		if test_df. shape [0] == 50 and csv_df. shape [0] == 1799:
 			print ("Already processed")
 			exit (1)
 	# Run OpenFace binary program to the video and the given output directory
-	os. system (args. openface + "build/bin/FeatureExtraction -q -f %s -out_dir %s" %(args. video, out_file))
+	os. system (args. openface + "build/bin/FeatureExtraction -q -f %s -out_dir %s" %(args. video, out_file))'''
 
 	# Construct the index: 50 observations in physiological data
 	index = [0.6025]

@@ -1,0 +1,19 @@
+\begin{tabular}{llll}
+\toprule
+ ROI & dm\_method & Predictors & Features\_importances \\
+\midrule
+ lAMG & mi\_rank & ['Head\_rotation\_energy\_I', 'Head\_Ry\_I', 'AU\_all\_I', 'AU\_eyes\_I', 'Head\_Rx\_I', 'Head\_Ty\_I', 'Happy\_I', 'Sad\_I', 'SpeechActivity\_I', 'Face\_looks\_P', 'Neutral\_I', 'ReactionTime\_I'] & [0.2, 0.19, 0.15, 0.12, 0.06, 0.06, 0.04, 0.04, 0.04, 0.03, 0.03, 0.03] \\
+ lPc & k\_medoids & ['SpeechActivity\_P'] & [1.0] \\
+ lSTS & mi\_rank & ['SpeechActivity\_I'] & [1.0] \\
+ lTPJ & k\_medoids & ['ReactionTime\_P', 'SpeechActivity\_P', 'SpeechActivity\_I', 'Feedbacks\_P', 'SpeechRate\_I', 'LexicalRichness\_I', 'SpeechRate\_P', 'AU\_eyes\_I', 'AUs\_mouth\_I', 'Feedbacks\_I', 'Face\_looks\_P', 'Polarity\_I', 'TypeTokenRatio\_I'] & [0.28, 0.17, 0.09, 0.08, 0.08, 0.06, 0.05, 0.03, 0.03, 0.03, 0.02, 0.02, 0.02] \\
+ lV1 & mi\_rank & ['Face\_looks\_P'] & [1.0] \\
+ lVMPFC & k\_medoids & ['SpeechActivity\_I', 'SpeechRate\_P', 'AU\_all\_I', 'SpeechActivity\_P', 'AUs\_mouth\_I', 'TypeTokenRatio\_P', 'Feedbacks\_P', 'Smiles\_I', 'Subjectivity\_P', 'UnionSocioItems\_P'] & [0.19, 0.18, 0.17, 0.13, 0.09, 0.09, 0.05, 0.04, 0.02, 0.02] \\
+ rAMG & model\_select & ['Head\_Tx\_I', 'Gaze\_movement\_energy\_P', 'Face\_looks\_P', 'Head\_Rx\_I', 'Gaze\_speed\_P', 'Head\_Ty\_I', 'Head\_rotation\_energy\_I', 'Saccades\_P', 'AU\_eyes\_I', 'AUs\_mouth\_I', 'Head\_translation\_energy\_I', 'AU\_all\_I'] & [0.18, 0.16, 0.14, 0.11, 0.1, 0.06, 0.05, 0.05, 0.04, 0.04, 0.04, 0.02] \\
+ rPc & model\_select & ['SpeechActivity\_P', 'Gaze\_movement\_energy\_P', 'Head\_rotation\_energy\_I', 'Head\_Tx\_I', 'Head\_translation\_energy\_I', 'Gaze\_speed\_P', 'Head\_Ty\_I', 'Head\_Ry\_I', 'Saccades\_P', 'Head\_Rx\_I'] & [0.19, 0.18, 0.14, 0.1, 0.08, 0.07, 0.07, 0.06, 0.03, 0.02] \\
+ rSTS & mi\_rank & ['SpeechActivity\_I'] & [1.0] \\
+ rTPJ & k\_medoids & ['SpeechActivity\_P', 'Feedbacks\_P'] & [0.67, 0.33] \\
+ rV1 & model\_select & ['Gaze\_speed\_P', 'AUs\_mouth\_I', 'Head\_Tx\_I', 'AU\_all\_I', 'Gaze\_movement\_energy\_P', 'Neutral\_I'] & [0.24, 0.2, 0.16, 0.14, 0.14, 0.11] \\
+ rVMPFC & model\_select & ['Gaze\_speed\_P', 'Saccades\_P', 'Gaze\_movement\_energy\_P', 'Head\_Rx\_I', 'Head\_Tx\_I', 'Head\_Ry\_I', 'Head\_translation\_energy\_I', 'SpeechActivity\_P', 'Head\_Ty\_I', 'AU\_eyes\_I', 'AUs\_mouth\_I', 'Head\_rotation\_energy\_I', 'SpeechActivity\_I', 'Face\_looks\_P', 'Sad\_I'] & [0.18, 0.14, 0.13, 0.08, 0.08, 0.06, 0.05, 0.05, 0.04, 0.03, 0.03, 0.03, 0.03, 0.02, 0.02] \\
+ rMPFC & model\_select & ['Head\_rotation\_energy\_I', 'Head\_Ry\_I', 'Gaze\_speed\_P', 'SpeechActivity\_P', 'Head\_Rx\_I', 'Head\_Tx\_I', 'Head\_Ty\_I', 'Saccades\_P', 'SpeechRate\_P', 'Head\_translation\_energy\_I', 'Gaze\_movement\_energy\_P'] & [0.18, 0.13, 0.1, 0.1, 0.09, 0.07, 0.06, 0.06, 0.06, 0.03, 0.02] \\
+\bottomrule
+\end{tabular}

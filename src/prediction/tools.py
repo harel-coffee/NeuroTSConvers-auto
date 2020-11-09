@@ -13,7 +13,7 @@ maindir = os.path.dirname(parentdir)
 
 sys.path.insert(3,maindir)
 
-from src.feature_selection.reduction import manual_selection, generic_reduction
+from src.feature_selection.reduction import generic_reduction
 
 #===========================================================
 def features_in_select_results (selec_results, region, features):
@@ -49,18 +49,6 @@ def write_line (filename, row, mode = "a+", sep = ';'):
 	f. close ()
 	return
 
-#=======================================================
-def list_convers (n_blocks = 4, n_convs = 6):
-	# Return the list of conversations names in the format like : CONV2_002
-	convs = []
-	for t in range (1, n_blocks + 1):
-		for j in range (1, n_convs + 1):
-			if j%2:
-				i = 1
-			else:
-				i = 2
-			convs. append ("convers-TestBlocks%s_CONV%d"%(t, i) +  "_%03d"%j)
-	return convs
 
 #===============================================================
 def get_names_from_laggedNames (lagged_n):
@@ -186,36 +174,30 @@ def specific_feature_selection (train_set, test_set, y_train,  k, method, model)
 	return train_set_select, test_set_select, select_indices
 
 #============================================================
-def get_predictive_features_set (target_column, method, model, all, all_m, type):
-
+def get_predictive_features_set (target_column, type):
 	"""
-		all_m: test non-realted features specific to each brain area
-		all: test all features as input
+		target_column: name of the ROI
+		model: test all features as input
 	"""
 
-	if all_m:
-		set_of_behavioral_predictors = manual_selection (target_column)
+	brain_areas_desc = pd. read_csv ("brain_areas.tsv", sep = '\t', header = 0)
+	short_target_name = brain_areas_desc . loc [brain_areas_desc ["Name"] == target_column, "ShortName"]. values [0]
 
-	elif all:
-		# Add  of all features
-		set_of_behavioral_predictors =  ["all"]
-
+	if target_column in ["CSF", "GreyMatter", "WhiteMatter"]:
+		target_name = "rMPFC"
 	else:
-		#set_of_behavioral_predictors = manual_selection (target_column)
-		if target_column in ["CSF", "GreyMatter", "WhiteMatter"]:
-			target_name = "rMPFC"
-		else:
-			target_name = target_column
+		target_name = target_column
 
-		if not os.path.exists ("results/best_results/bestModel_%s_selected.tsv"%(type)):
-			print ("path results/best_results/bestModel_%s_selected.tsv does not exist"%(type))
-			exit (1)
+	if not os.path.exists ("results/last_best_results/bestModel_%s.tsv"%(type)):
+		print ("path results/last_best_results/bestModel_%s.tsv does not exist!"%(type))
+		exit (1)
 
-		results = pd. read_csv ("results/best_results/bestModel_%s_selected.tsv"%(type), sep = "\t")
-		set_of_behavioral_predictors = literal_eval (results. loc [results. region == target_name, "selected_predictors"]. values[0])
+	try:
+		results = pd. read_csv ("results/last_best_results/bestModel_%s.tsv"%(type), sep = "\t")
+		set_of_behavioral_predictors = literal_eval (results. loc [results. region == short_target_name, "selected_predictors"]. values[0])
 		set_of_behavioral_predictors  = [str (x) for x in set_of_behavioral_predictors]
-		# Transform temporal representation to regular names
-		set_of_behavioral_predictors = list (set ([('_'). join (a. split ('_')[:-1]) for a in set_of_behavioral_predictors]))
-		set_of_behavioral_predictors = [{"selected": set_of_behavioral_predictors}]
+	except:
+		print ("Error when getting  selected features from existing results!")
+		exit (1)
 
 	return set_of_behavioral_predictors
