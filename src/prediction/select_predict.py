@@ -103,7 +103,7 @@ def run_fs_method (X_train, y_train, X_test, y_test, lagged_names, target_column
 		reduced_features, importances = summarize_features_importance (selected_list, features_importance)
 		row = [target_column,  dm_method, lag, str (best_model_params), reduced_features, selected_list, importances] + evaluations + std_errors
 
-	write_line (filename, row, mode = "a")
+	write_line (filename, row, mode = "a+")
 
 #============================================================
 def parallel_fs_prediction (X_train, y_train, X_test, y_test, lagged_names, target_column, lag, model, method, set_k, find_params, type, filename):
@@ -164,10 +164,7 @@ def predict_area (behavioral_variables, target_column, model, lag, filename, fin
 	else:
 		set_of_behavioral_predictors = [get_predictive_features_set (target_column, type)]
 
-	if model in ["baseline"]:
-		resample = 1
-	else:
-		resample = 0
+	resample = 0
 
 	# Split data into train and test set, where the test set is the last 20% of the data
 	X_train_all, X_test_all, y_train, y_test = train_test_from_df (behavioral_variables, y, perc = 0.25, pos = 3, normalize = False, resample = resample)

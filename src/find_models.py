@@ -14,8 +14,9 @@ warnings.filterwarnings("ignore")
 
 def prediction (regions, model, method, lag, remove, all, allm):
 	if model == 'baseline':
-		predict_multiple_areas (regions, "baseline", "None", lag, remove, True, True, False)
-		predict_multiple_areas (regions, "baseline", "None", lag, remove, False, True, False)
+		predict_multiple_areas (regions, lag, "baseline", remove, True, True, False, "None")
+		predict_multiple_areas (regions, lag, "baseline", remove, False, True, False, "None")
+
 
 	elif model in ['MLP', 'LSTM']:
 		predict_multiple_areas (regions, lag, model, remove, False, all, allm, method)
