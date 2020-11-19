@@ -54,14 +54,16 @@ def landmark_to_rect (frame, land_marks, item_name, scale = 50.0):
 	if item_name == "right_eye":
 		scale = 100
 		xrbmin, xrbmax, yrbmin, yrbmax = get_minmax (frame, land_marks, "right_eyebrow")
-		xscale =  int ((float (scale) / 200) * (xmax[0] - xmin[0]))
-		yscale =   - yrbmax[1] + ymin[1]
+		xscale =  int (0.5 * (xmax[0] - xmin[0]))
+		yscale =  int (1.0 * (ymax[0] - ymin[0]))
+		#yscale =   - yrbmax[1] + ymin[1]
 
 	elif item_name == "left_eye":
 		scale = 100
 		xrbmin, xrbmax, yrbmin, yrbmax = get_minmax (frame, land_marks, "left_eyebrow")
-		xscale =  int ((float (scale) / 200) * (xmax[0] - xmin[0]))
-		yscale =  - yrbmax[1] + ymin[1]
+		xscale =  int (0.5 * (xmax[0] - xmin[0]))
+		yscale =  int (1.0 * (ymax[0] - ymin[0]))
+		#yscale =  - yrbmax[1] + ymin[1]
 
 	elif item_name == "face":
 		xscale =  int ((float (scale) / 200) * (xmax[0] - xmin[0]))
@@ -122,14 +124,10 @@ if __name__ == '__main__':
 	parser.add_argument("out_dir", help = "the path where to store the results.")
 	parser.add_argument("--show",'-s', help = "Showing the video.", action = "store_true")
 	parser.add_argument("--save",'-sv', help = "Save the new video.", action = "store_true")
-	parser.add_argument("--demo",'-d', help = "If this script is using for demo.", action = "store_true")
+	parser.add_argument("--demo",'-d', help = "If this script is used for a demo.", action = "store_true")
 	parser.add_argument("--eyetracking",'-eye', help = "the path of the eyetracking file.")
 	parser.add_argument("--facial_features",'-faf', help = "the path of the facial features file (csv file).")
 	args = parser.parse_args()
-
-	if args. out_dir == 'None':
-	    usage ()
-	    exit ()
 
 	if args. out_dir[-1] != '/':
 	    args. out_dir += '/'
@@ -181,7 +179,8 @@ if __name__ == '__main__':
 	# Construct the index of the video stream
 	video_index = [1.0 / fps ]
 	for i in range (1, frames_nb):
-	    video_index. append (1.0 / 30.0 + video_index [i - 1])
+	    video_index. append (1.0 / fps + video_index [i - 1])
+
 
 	# resample gaze coordinates to the video frequency
 	gaze_coordiantes = resampling. resample_ts (eye_tracking_data, video_index, mode = "mean")
@@ -192,7 +191,6 @@ if __name__ == '__main__':
 		cols = cols + [" x_%d"%i, " y_%d"%i]
 
 	openface_data = openface_data [cols]. values
-
 
 	# start loop over video stream
 	nb_frames = 0
@@ -220,11 +218,15 @@ if __name__ == '__main__':
 
 			face = landmark_to_rect (bgr_image, landmarks, "face", scale = 10)
 			mouth = landmark_to_rect (bgr_image, landmarks, "mouth")
-			right_eye = landmark_to_rect (bgr_image, landmarks, "right_eye")
-			left_eye = landmark_to_rect (bgr_image, landmarks, "left_eye")
+			right_eye = landmark_to_rect (bgr_image, landmarks, "right_eye", scale = 60)
+			left_eye = landmark_to_rect (bgr_image, landmarks, "left_eye", scale = 60)
 
-			#for x, y in landmarks:
-				#cv2.circle (bgr_image, (x, y), 2, (255, 0, 0), -1)
+			cv2. rectangle (bgr_image, face, (0,255,0), 3)
+			cv2. rectangle (bgr_image, mouth, (0,255,0), 3)
+			cv2. rectangle (bgr_image, right_eye, (0,255,0), 3)
+			cv2. rectangle (bgr_image, left_eye, (0,255,0), 3)
+			for x, y in landmarks:
+				cv2.circle (bgr_image, (x, y), 2, (255, 0, 0), -1)
 
 			# rescale coordinate according the screen of the experience
 			x = (gaze_coordiantes [nb_frames, 1]  / float (1279)) * frame_width   #1279
