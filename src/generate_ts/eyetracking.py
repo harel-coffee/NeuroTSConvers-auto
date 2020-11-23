@@ -146,12 +146,12 @@ if __name__ == '__main__':
 		openface_file = "time_series/%s/openface_features_ts/%s/%s.csv"%(subject, conversation_name, conversation_name)
 
 	out_file = args. out_dir + conversation_name
-	'''if os.path.isfile ("%s.pkl"%out_file):
+	if os.path.isfile ("%s.pkl"%out_file):
 		print (out_file)
 		test_df = pd.read_pickle ("%s.pkl"%out_file)
 		if test_df. shape [0] == 50:
 			print ("Conversation already processed!")
-			exit (1)'''
+			exit (1)
 
 	# read the video
 	video_capture = cv2.VideoCapture(args.video)

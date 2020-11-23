@@ -33,17 +33,6 @@ def moving_average(n_signal, periods=3):
 
 #================================================#
 if __name__ == '__main__':
-	'''data = [1, 2, 3, 6, 9, 12, 20, 28, 30, 25, 22, 20, 15, 12, 10]
-	a = np. array (data). reshape ((-1,1))
-	a = np. insert (a, 1, [a * 2 for a in data], axis = 1)
-	print (a)
-
-	print (a. shape)
-	ma = moving_average (np.asarray (a), 3)
-	print (np.around(ma, decimals=2))
-
-	print (ma. shape)
-	exit (1)'''
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument("video", help = "the path of the video to process.")
@@ -55,7 +44,7 @@ if __name__ == '__main__':
 	if args. out_dir[-1] != '/':
 		args. out_dir += '/'
 
-	# This for an independant utilization of the script (outisde the experiment videos)
+	# This for an independant utilization of the script (for demonstration)
 	if args. demo:
 		openface_file = args. facial_features
 		conversation_name = "facial_features_energy"
@@ -69,10 +58,10 @@ if __name__ == '__main__':
 	out_file = args. out_dir + conversation_name
 
 	# check if file already processed
-	'''if os.path.exists (out_file + '.pkl'):
+	if os.path.exists (out_file + '.pkl'):
 		print (out_file)
 		print ("Warning, file already processed")
-		exit (1)'''
+		exit (1)
 
 	# check if feature extraction (openface) has been processed
 	if not os.path.exists (openface_file):
@@ -97,11 +86,6 @@ if __name__ == '__main__':
 	df1 ["AUs_mouth_I"] = openface_data. loc [:,[" AU10_c", " AU12_c"," AU14_c"," AU15_c"," AU17_c"," AU20_c", " AU23_c", " AU25_c", " AU26_c"]]. sum (axis = 1)
 	df1["AU_eyes_I"] = openface_data. loc [:, [" AU01_c", " AU02_c", " AU04_c", " AU05_c", " AU06_c", " AU07_c", " AU09_c"]]. sum (axis = 1)
 	df1["AU_all_I"] = df1 ["AUs_mouth_I"] + df1 ["AU_eyes_I"]
-	'''df1["AU12"] = openface_data [" AU12_c"]
-	df1["AU6"] = openface_data [" AU06_c"]
-	df1["AU26"] = openface_data [" AU26_c"]
-	df1["AU01"] = openface_data [" AU01_c"]
-	df1["AU02"] = openface_data [" AU02_c"]'''
 
 	# resampling
 	output_time_series = pd.DataFrame (resampling. resample_ts (df1. values, physio_index, mode = "mean"), columns = df1.columns)
@@ -153,9 +137,6 @@ if __name__ == '__main__':
 			if ((max_ - min_) <= seuil):
 				head_positions. iloc [:,j] = 0
 
-	#head_positions_diff = np. diff (head_positions. iloc[:,1:]. values, axis = 0)
-	#head_positions_diff = np. insert (head_positions_diff, 0, video_index[1:], axis = 1)
-
 	head_positions_diff = np. gradient (head_positions.values[1:,1:], video_index[1:], axis = 0)
 	head_positions_diff = np. insert (head_positions_diff, 0, video_index[1:], axis = 1)
 
@@ -183,6 +164,5 @@ if __name__ == '__main__':
 	output_time_series["Head_rotation_energy_I"] = head_rotation_energy[:,1] #without index
 	output_time_series["Head_translation_energy_I"] = head_translation_energy[:,1]
 
-	#print (output_time_series)
 	# save data in pickle file
 	output_time_series.to_pickle (out_file + ".pkl")
