@@ -43,50 +43,51 @@ def get_minmax (frame, land_marks, item_name):
 	ymin = item [np.argmin (item [:,1])]
 	ymax = item [np.argmax (item [:,1])]
 
-	return xmin, xmax, ymin, ymax
+	return xmin[0], xmax[0], ymin[1], ymax[1]
 
 #===========================================================#
 # extract the location of an item as rectangle using ladmarks and the image
-def landmark_to_rect (frame, land_marks, item_name, scale = 50.0):
+def landmark_to_rect (frame, land_marks, item_name):
 
 	xmin, xmax, ymin, ymax = get_minmax (frame, land_marks, item_name)
+	#print (xmin, xmax, ymin, ymax)
+	if item_name in ["right_eye", "left_eye"]:
+		#xrbmin, xrbmax, yrbmin, yrbmax = get_minmax (frame, land_marks, "right_eyebrow")
+		#xscale =   max (xrbmax - xmax,  int (0.2 * (xmax - xmin)))
+		#yscale =    max (yrbmax - ymin,  int (0.5 * (ymax - ymin)))
+		xscale =  int (0.5 * (xmax - xmin))
+		yscale =  int (0.8 * (ymax - ymin))
 
-	if item_name == "right_eye":
-		scale = 100
-		xrbmin, xrbmax, yrbmin, yrbmax = get_minmax (frame, land_marks, "right_eyebrow")
-		xscale =  int (0.5 * (xmax[0] - xmin[0]))
-		yscale =  int (1.0 * (ymax[0] - ymin[0]))
-		#yscale =   - yrbmax[1] + ymin[1]
-
-	elif item_name == "left_eye":
-		scale = 100
-		xrbmin, xrbmax, yrbmin, yrbmax = get_minmax (frame, land_marks, "left_eyebrow")
-		xscale =  int (0.5 * (xmax[0] - xmin[0]))
-		yscale =  int (1.0 * (ymax[0] - ymin[0]))
-		#yscale =  - yrbmax[1] + ymin[1]
+		'''elif item_name == "left_eye":
+			xrbmin, xrbmax, yrbmin, yrbmax = get_minmax (frame, land_marks, "left_eyebrow")
+			xscale =   max (xrbmax - xmax,  int (0.2 * (xmax - xmin)))
+			yscale =  max (yrbmax - ymin,  int (0.5 * (ymax - ymin)))'''
 
 	elif item_name == "face":
-		xscale =  int ((float (scale) / 200) * (xmax[0] - xmin[0]))
-		yscale =  int ((float (scale) / 200) * (ymax[0] - ymin[0]))
-		x = xmin[0] - xscale
-		w = xmax[0] - x + xscale
+		xscale =  int (0.05 * (xmax - xmin))
+		yscale =  int (0.05 * (ymax - ymin))
+		x = xmin - xscale
+		w = xmax - x + xscale
 
-		y = ymin[1] - yscale
-		h = ymax [1] - y + yscale
-		y = y - int (0.333 * h)
-		h = h + int (0.333 * h)
+		y = ymin - yscale
+		h = ymax - y + yscale
+		# add fron head (20% as approximation)
+		y = y - int (0.25 * h)
+		h = h + int (0.25 * h)
 
 		return (x, y, w, h)
 
-	else:
-		xscale =  int ((float (scale) / 200) * (xmax[0] - xmin[0]))
-		yscale =  int ((float (scale) / 200) * (ymax[0] - ymin[0]))
+	elif item_name == "mouth":
+		xscale =  int (0.1 * (xmax - xmin))
+		yscale =  int (0.3 * (ymax - ymin))
 
-	x = xmin[0] - xscale
-	w = xmax[0] - x + xscale
+	#xscale = int (0.2 * (xmax[0] - xmin[0]))
+	#yscale = int (0.2 * (ymax[0] - ymin[0]))
+	x = xmin - xscale
+	w = xmax - x + xscale
 
-	y = ymin[1] - yscale
-	h = ymax [1] - y + yscale
+	y = ymin - yscale
+	h = ymax - y + yscale
 
 	return (x, y, w, h)
 
@@ -145,12 +146,12 @@ if __name__ == '__main__':
 		openface_file = "time_series/%s/openface_features_ts/%s/%s.csv"%(subject, conversation_name, conversation_name)
 
 	out_file = args. out_dir + conversation_name
-	if os.path.isfile ("%s.pkl"%out_file):
+	'''if os.path.isfile ("%s.pkl"%out_file):
 		print (out_file)
 		test_df = pd.read_pickle ("%s.pkl"%out_file)
 		if test_df. shape [0] == 50:
 			print ("Conversation already processed!")
-			exit (1)
+			exit (1)'''
 
 	# read the video
 	video_capture = cv2.VideoCapture(args.video)
@@ -169,21 +170,22 @@ if __name__ == '__main__':
 	# If demo, we use eyetracking and openface csv files as input,
 	# else, we find them automatically based on the name of the video
 
-
 	# read eyetracking and openface csv files
 	eye_tracking_data = pd. read_pickle (eye_tracking_file) #. values. astype (float)
 	saccades = eye_tracking_data . loc [:, ["Time (s)","saccades"]]. values. astype (float)
-	eye_tracking_data = eye_tracking_data . loc [:, ["Time (s)", "x", "y"]]. values. astype (float)
 	openface_data = pd. read_csv (openface_file, sep = ',', header = 0)
+
+	# read DISPLAY_COORDS from metadata
+	display_coords = eye_tracking_data. display_coords
+	eye_tracking_data = eye_tracking_data. values. astype (float)
 
 	# Construct the index of the video stream
 	video_index = [1.0 / fps ]
 	for i in range (1, frames_nb):
-	    video_index. append (1.0 / fps + video_index [i - 1])
-
+		video_index. append (1.0 / fps + video_index [i - 1])
 
 	# resample gaze coordinates to the video frequency
-	gaze_coordiantes = resampling. resample_ts (eye_tracking_data, video_index, mode = "mean")
+	gaze_coordiantes = resampling. resample_ts (eye_tracking_data[:,0:3], video_index, mode = "mean")
 
 	# extract time index and 2D landmarks columns from openface data
 	cols = [" timestamp", " success"]
@@ -200,6 +202,7 @@ if __name__ == '__main__':
 
 	while True:
 		ret, bgr_image = video_capture.read()
+		#bgr_image = cv2.resize(bgr_image,(1279,1919))
 		current_time += 1.0 / float (fps)
 
 		if ret == False:
@@ -216,21 +219,21 @@ if __name__ == '__main__':
 			for j in range (0, 136, 2):
 				landmarks. append ([ int (lds [j]), int (lds [j + 1]) ])
 
-			face = landmark_to_rect (bgr_image, landmarks, "face", scale = 10)
+			face = landmark_to_rect (bgr_image, landmarks, "face")
 			mouth = landmark_to_rect (bgr_image, landmarks, "mouth")
-			right_eye = landmark_to_rect (bgr_image, landmarks, "right_eye", scale = 60)
-			left_eye = landmark_to_rect (bgr_image, landmarks, "left_eye", scale = 60)
+			right_eye = landmark_to_rect (bgr_image, landmarks, "right_eye")
+			left_eye = landmark_to_rect (bgr_image, landmarks, "left_eye")
 
-			cv2. rectangle (bgr_image, face, (0,255,0), 3)
+			'''cv2. rectangle (bgr_image, face, (0,255,0), 3)
 			cv2. rectangle (bgr_image, mouth, (0,255,0), 3)
 			cv2. rectangle (bgr_image, right_eye, (0,255,0), 3)
-			cv2. rectangle (bgr_image, left_eye, (0,255,0), 3)
+			cv2. rectangle (bgr_image, left_eye, (0,255,0), 3)'''
 			for x, y in landmarks:
 				cv2.circle (bgr_image, (x, y), 2, (255, 0, 0), -1)
 
 			# rescale coordinate according the screen of the experience
-			x = (gaze_coordiantes [nb_frames, 1]  / float (1279)) * frame_width   #1279
-			y = (gaze_coordiantes [nb_frames, 2] / float (1023)) * frame_height   #1023
+			x = (gaze_coordiantes [nb_frames, 1]  / float (display_coords[0])) * frame_width   #1279 1919
+			y = (gaze_coordiantes [nb_frames, 2] / float (display_coords[1])) * frame_height   #1023 1079
 
 
 			# check if eyetracking coordinates are not nan

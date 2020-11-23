@@ -31,7 +31,7 @@ item []:
 		intervals [5]:
 			xmin = 3.389977
 			xmax = 3.509977
-			text = "Z"
+			text = "S"
 		intervals [6]:
 			xmin = 3.509977
 			xmax = 3.619977
@@ -503,7 +503,7 @@ item []:
 		intervals [5]:
 			xmin = 3.389977
 			xmax = 3.509977
-			text = "Z"
+			text = "S"
 		intervals [6]:
 			xmin = 3.509977
 			xmax = 3.619977

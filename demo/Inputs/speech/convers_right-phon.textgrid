@@ -34,11 +34,11 @@ b-O~-Z-u-R
 			xmin = 9.12997732426
 			xmax = 11.2299773243
 			text = "m-w-A/
-{Z|S|Z-@}
-{k-R-w-A/|k-R-w-A/-z}
-{k-@|k}
+{S|Z|Z-@}
+{k-R-w-A/-z|k-R-w-A/}
+{k|k-@}
 s
-{t|E|E-s-t|e|E-s-t-@|E-t|e-t}
+{e-t|E-s-t|t|e|E-t|E|E-s-t-@}
 {y-n-@|y-n}
 {p-O/-m-@|p-O/-m}"
 		intervals [6]:
@@ -48,12 +48,12 @@ s
 		intervals [7]:
 			xmin = 16.1
 			xmax = 17.7299773243
-			text = "{s-E-t-@|s-E-t}
+			text = "{s-E-t|s-E-t-@}
 {p-O/-m-@|p-O/-m}
-{t|E|E-s-t|e|E-s-t-@|E-t|e-t}
+{e-t|E-s-t|t|e|E-t|E|E-s-t-@}
 A/
 l
-{a~-v-E-R-z|a~-v-E-R}"
+{a~-v-E-R|a~-v-E-R-z}"
 		intervals [8]:
 			xmin = 17.7299773243
 			xmax = 23.6100226757
@@ -62,9 +62,9 @@ l
 			xmin = 23.6100226757
 			xmax = 24.6899773243
 			text = "k
-{t|E|E-s-t|e|E-s-t-@|E-t|e-t}
-{s|s-e-2|s-@}
-{k-@|k}
+{e-t|E-s-t|t|e|E-t|E|E-s-t-@}
+{s-@|s-e-2|s}
+{k|k-@}
 t
 a~
 {p-a~-s|p-a~-s-@}"
@@ -77,8 +77,8 @@ a~
 			xmax = 31.5299773243
 			text = "{w-i|u-i}
 s
-{t|E|E-s-t|e|E-s-t-@|E-t|e-t}
-{p-O/-s-i-b-l|p-O/-s-i-b-l-@}"
+{e-t|E-s-t|t|e|E-t|E|E-s-t-@}
+{p-O/-s-i-b-l-@|p-O/-s-i-b-l}"
 		intervals [12]:
 			xmin = 31.5299773243
 			xmax = 35.72
@@ -86,12 +86,12 @@ s
 		intervals [13]:
 			xmin = 35.72
 			xmax = 37.2899773243
-			text = "{s-E-t-@|s-E-t}
+			text = "{s-E-t|s-E-t-@}
 {p-O/-m-@|p-O/-m}
 A/
-{d-E-z|d|d-e-z|d-E|d-e}
-{g-R-a~|g-R-a~-z}
-{j-@|j-2-z}"
+{d-E-z|d-e-z|d-e|d-E|d}
+{g-R-a~-z|g-R-a~}
+{j-2-z|j-@}"
 		intervals [14]:
 			xmin = 37.2899773243
 			xmax = 43.1950113379
@@ -100,10 +100,10 @@ A/
 			xmin = 43.1950113379
 			xmax = 44.7699773243
 			text = "{n-O/|n-O~|n-a~|n-O~-n}
-{Z|S|Z-@}
+{S|Z|Z-@}
 {n|n-@}
-{k-R-w-A/|k-R-w-A/-z}
-{p-A/-z|p-A/}"
+{k-R-w-A/-z|k-R-w-A/}
+{p-A/|p-A/-z}"
 		intervals [16]:
 			xmin = 44.7699773243
 			xmax = 45.5899773243
@@ -114,9 +114,9 @@ A/
 			text = "k-E-l-k-U~/
 A/
 d-E-k-u-p-e
-{U~/|U~/-n}
+{U~/-n|U~/}
 {v-i-z-A/-Z|v-i-z-A/-Z-@}
-{d-a~|d-a~-z}
+{d-a~-z|d-a~}
 l-A/
 {p-O/-m-@|p-O/-m}"
 		intervals [18]:
@@ -129,7 +129,7 @@ l-A/
 			text = "{t-j|t|t-y}
 {n|n-@}
 {p-a~-s|p-a~-s-@}
-{p-A/-z|p-A/}"
+{p-A/|p-A/-z}"
 		intervals [20]:
 			xmin = 58.0099773243
 			xmax = 59.0
