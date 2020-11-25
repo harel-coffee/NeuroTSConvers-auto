@@ -6,16 +6,14 @@
 
 import numpy as np
 import pandas as pd
-import cv2, dlib, sys, os, inspect, argparse, importlib
+import cv2, dlib, sys, os, inspect, argparse
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 maindir = os.path.dirname(parentdir)
 
-resampling_spec = importlib.util.spec_from_file_location("resampling", "%s/src/resampling.py"%maindir)
-resampling = importlib.util.module_from_spec(resampling_spec)
-resampling_spec.loader.exec_module(resampling)
-
+sys.path.insert (0, maindir)
+import src.resampling as resampling
 #==================================================
 if __name__ == '__main__':
 
@@ -28,7 +26,7 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	face_cascade = cv2.CascadeClassifier("src/utils/detection_models/haarcascades/haarcascade_frontalface_default.xml")
-	smile_cascade = cv2.CascadeClassifier('/home/youssef/opencv-4.1.2/data/haarcascades/haarcascade_smile.xml')
+	smile_cascade = cv2.CascadeClassifier('src/utils/detection_models/haarcascades/haarcascade_smile.xml')
 
 	if args. out_dir == 'None':
 		usage ()

@@ -17,7 +17,7 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 maindir = os.path.dirname(parentdir)
 
-sys.path.insert (3, maindir)
+sys.path.insert (0, maindir)
 
 # local files
 from src.prediction.tools import *
@@ -164,7 +164,10 @@ def predict_area (behavioral_variables, target_column, model, lag, filename, fin
 	else:
 		set_of_behavioral_predictors = [get_predictive_features_set (target_column, type)]
 
-	resample = 0
+	if model in ["baseline"] and not find_params:
+		resample = 0
+	else:
+		resample = 0
 
 	# Split data into train and test set, where the test set is the last 20% of the data
 	X_train_all, X_test_all, y_train, y_test = train_test_from_df (behavioral_variables, y, perc = 0.25, pos = 3, normalize = False, resample = resample)

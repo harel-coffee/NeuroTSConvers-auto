@@ -169,7 +169,7 @@ def train_pred_model (model, dm_method, train_data, target_column, variables_lis
 
 		# k-fold cross validation: find hyperparameters if the model
 		elif find_params:
-			pred_model, best_model_params, mean_scores, std_errors, k_fscores = k_fold_cv (train_data[:,1:], train_data[:,0], n_folds = 10, classifier = model)
+			pred_model, best_model_params, mean_scores, std_errors, k_fscores = k_fold_cv (train_data[:,1:], train_data[:,0], n_folds = 9, classifier = model)
 			return best_model_params, mean_scores, std_errors, k_fscores, []
 
 		else:

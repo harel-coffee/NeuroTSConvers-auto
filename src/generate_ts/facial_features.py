@@ -4,18 +4,16 @@
 	Compute features about head movment energy, contractions (AUs), head ositions ..
 """
 
-import sys, os, inspect, argparse, importlib
+import sys, os, inspect, argparse
 import numpy as np
 import pandas as pd
-#from sklearn.cluster import KMeans
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 maindir = os.path.dirname(parentdir)
 
-resampling_spec = importlib.util.spec_from_file_location("resampling", "%s/src/resampling.py"%maindir)
-resampling = importlib.util.module_from_spec(resampling_spec)
-resampling_spec.loader.exec_module(resampling)
+sys.path.insert (0, maindir)
+import src.resampling as resampling
 
 #===================================================
 def moving_average(n_signal, periods=3):

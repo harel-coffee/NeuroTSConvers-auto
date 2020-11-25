@@ -82,8 +82,6 @@ def get_best_features (brain_area, model, type):
 
 	return best_features
 
-
-
 #============================================================
 def train_test_from_df (df, y, perc, pos, normalize = False, resample = False):
 	"""
@@ -183,8 +181,9 @@ def get_predictive_features_set (target_column, type):
 	brain_areas_desc = pd. read_csv ("brain_areas.tsv", sep = '\t', header = 0)
 	short_target_name = brain_areas_desc . loc [brain_areas_desc ["Name"] == target_column, "ShortName"]. values [0]
 
-	if target_column in ["CSF", "GreyMatter", "WhiteMatter"]:
-		target_name = "rMPFC"
+	if target_column in ["GreyMatter", "WhiteMatter"]:
+		target_name = "lSTS"
+		short_target_name = target_name
 	else:
 		target_name = target_column
 

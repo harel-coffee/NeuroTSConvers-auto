@@ -9,10 +9,10 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 maindir = os.path.dirname(parentdir)
 
-import importlib
-resampling_spec = importlib.util.spec_from_file_location("resampling", "%s/src/resampling.py"%maindir)
-resampling = importlib.util.module_from_spec(resampling_spec)
-resampling_spec.loader.exec_module(resampling)
+sys.path.insert (0, maindir)
+import src.resampling as resampling
+
+#===================================================
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 

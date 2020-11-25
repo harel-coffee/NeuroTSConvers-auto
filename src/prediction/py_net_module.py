@@ -11,7 +11,7 @@ class pyNet ():
 		l = v_unsigned()
 
 		if type (input_dim) == int:
-			l[:] = [input_dim]
+			l[:] = [1,1, input_dim]
 		elif type (input_dim) == tuple:
 			l[:] = list (input_dim)
 		elif type (input_dim) == list:

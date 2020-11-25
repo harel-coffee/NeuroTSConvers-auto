@@ -225,7 +225,10 @@ if __name__ == '__main__':
 	best_model_results = best_model_results. loc [(best_model_results. model.isin (["MLP", "mlp", "lstm", "LSTM", "LSTM_MODEL", "MLP_MODEL"]) == False),["region", "selected_predictors", "dm_method"]]
 	best_model_results =  best_model_results. loc [best_model_results. region.isin (brain_areas)]
 
-	Parallel (n_jobs = 2) (delayed (predict_one_roi)(target_name, features, dm_method, filename, args. model, bold, behaviors, args. lag)
-							for target_name, features, dm_method in best_model_results. values)
+	#Parallel (n_jobs = 4) (delayed (predict_one_roi)(target_name, features, dm_method, filename, args. model, bold, behaviors, args. lag)
+							#for target_name, features, dm_method in best_model_results. values)
+	for target_name, features, dm_method in best_model_results. values:
+		predict_one_roi (target_name, features, dm_method, filename, args. model, bold, behaviors, args. lag)
+
 
 	print (".. Done.")

@@ -4,7 +4,7 @@
 	Using extracted feature detected (Openface) and eyetracking files to generate extra features
 """
 
-import sys, os, inspect, argparse, importlib
+import sys, os, inspect, argparse
 import numpy as np
 import pandas as pd
 
@@ -16,9 +16,8 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 maindir = os.path.dirname(parentdir)
 
-resampling_spec = importlib.util.spec_from_file_location("resampling", "%s/src/resampling.py"%maindir)
-resampling = importlib.util.module_from_spec(resampling_spec)
-resampling_spec.loader.exec_module(resampling)
+sys.path.insert (0, maindir)
+import src.resampling as resampling
 
 #===========================================================
 
@@ -52,16 +51,8 @@ def landmark_to_rect (frame, land_marks, item_name):
 	xmin, xmax, ymin, ymax = get_minmax (frame, land_marks, item_name)
 	#print (xmin, xmax, ymin, ymax)
 	if item_name in ["right_eye", "left_eye"]:
-		#xrbmin, xrbmax, yrbmin, yrbmax = get_minmax (frame, land_marks, "right_eyebrow")
-		#xscale =   max (xrbmax - xmax,  int (0.2 * (xmax - xmin)))
-		#yscale =    max (yrbmax - ymin,  int (0.5 * (ymax - ymin)))
 		xscale =  int (0.5 * (xmax - xmin))
 		yscale =  int (0.8 * (ymax - ymin))
-
-		'''elif item_name == "left_eye":
-			xrbmin, xrbmax, yrbmin, yrbmax = get_minmax (frame, land_marks, "left_eyebrow")
-			xscale =   max (xrbmax - xmax,  int (0.2 * (xmax - xmin)))
-			yscale =  max (yrbmax - ymin,  int (0.5 * (ymax - ymin)))'''
 
 	elif item_name == "face":
 		xscale =  int (0.05 * (xmax - xmin))
@@ -81,8 +72,6 @@ def landmark_to_rect (frame, land_marks, item_name):
 		xscale =  int (0.1 * (xmax - xmin))
 		yscale =  int (0.3 * (ymax - ymin))
 
-	#xscale = int (0.2 * (xmax[0] - xmin[0]))
-	#yscale = int (0.2 * (ymax[0] - ymin[0]))
 	x = xmin - xscale
 	w = xmax - x + xscale
 

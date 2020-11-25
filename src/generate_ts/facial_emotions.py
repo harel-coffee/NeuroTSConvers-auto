@@ -11,10 +11,8 @@ sys.stderr = open(os.devnull, 'w') # hide keras messages
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 
-
 from keras.models import load_model
 sys.stderr = stderr
-
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
