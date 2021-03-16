@@ -3,9 +3,6 @@
 This repository represent a system for multimodal brain activity prediction using behavioral features. The behavioral features represent verbal and non-verbal variables extracted during a fMRI experience of human-human and human-robot conversations conducted on several subjects.
 The aim is to detect the behavioral features that are responsible for the activation of each brain area, by means of prediction. The system can also be used to predict the brain activity of a given natural bidirectional conversation.  
 
-__This project is still under development.__
-
-
 ## Requirements
   * Python>=3.6
   * Openface  (https://github.com/TadasBaltrusaitis/OpenFace) is required to compute facial features from videos.
