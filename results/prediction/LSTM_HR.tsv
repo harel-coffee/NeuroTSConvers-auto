@@ -1,2 +1,0 @@
-region	dm_method	lag	models_params	predictors_dict	selected_predictors	features_importance	accuracy. mean	recall. mean	fscore. mean	accuracy. std	recall. std	fscore. std	nb_predictors
-WM	none	6	1_sgd	['disc_IPU_I', 'disc_IPU_P', 'IPU_P']	['IPU_P_t6', 'IPU_P_t5', 'IPU_P_t4', 'IPU_P_t3', 'disc_IPU_P_t6', 'disc_IPU_P_t5', 'disc_IPU_P_t4', 'disc_IPU_P_t3', 'disc_IPU_I_t6', 'disc_IPU_I_t5', 'disc_IPU_I_t4', 'disc_IPU_I_t3']	[0.4491046802589585, 0.43155695871311484, 0.11933836102792662]	0.5	0.61	0.46	0	0	0	3

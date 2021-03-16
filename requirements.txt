@@ -1,12 +1,10 @@
 joblib==0.14.1
 numpy==1.17.4
-Keras==2.3.1
 tensorflow>=2.0.3
 scipy==1.3.3
 imbalanced_learn==0.6.1
 mat4py==0.4.2
 pandas==0.25.3
-PyWavelets==1.1.1
 fylearn==0.0.0
 matplotlib==3.1.2
 spacy==2.2.3
@@ -14,12 +12,10 @@ scikit_image==0.16.2
 celluloid==0.2.0
 colour==0.1.5
 dlib==19.19.0
-imblearn==0.0
 imutils==0.5.3
 nibabel==2.5.1
 pattern==3.6
 pylab==0.0.2
 scikit_learn==0.22
-seaborn==0.9.0
 skimage==0.0
 visbrain==0.4.5

@@ -63,3 +63,451 @@ atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
 atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
 atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
 atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
+atlas.DefaultMode.MPFC (1,55,-3)	DefaultMode.MPFC	1
+atlas.DefaultMode.LP (L) (-39,-77,33)	DefaultMode.LP_L	2
+atlas.DefaultMode.LP (R) (47,-67,29)	DefaultMode.LP_R	3
+atlas.DefaultMode.PCC (1,-61,38)	DefaultMode.PCC	4
+atlas.SensoriMotor.Lateral (L) (-55,-12,29)	SensoriMotor.Lateral_L	5
+atlas.SensoriMotor.Lateral (R) (56,-10,29)	SensoriMotor.Lateral_R	6
+atlas.SensoriMotor.Superior  (0,-31,67)	SensoriMotor.Superior	7
+atlas.Visual.Medial (2,-79,12)	Visual.Medial	8
+atlas.Visual.Occipital (0,-93,-4)	Visual.Occipital	9
+atlas.Visual.Lateral (L) (-37,-79,10)	Visual.Lateral_L	10
+atlas.Visual.Lateral (R) (38,-72,13)	Visual.Lateral_R	11
+atlas.Salience.ACC (0,22,35)	Salience.ACC	12
+atlas.Salience.AInsula (L) (-44,13,1)	Salience.AInsula_L	13
+atlas.Salience.AInsula (R) (47,14,0)	Salience.AInsula_R	14
+atlas.Salience.RPFC (L) (-32,45,27)	Salience.RPFC_L	15
+atlas.Salience.RPFC (R) (32,46,27)	Salience.RPFC_R	16
+atlas.Salience.SMG (L) (-60,-39,31)	Salience.SMG_L	17
+atlas.Salience.SMG (R) (62,-35,32)	Salience.SMG_R	18
+atlas.DorsalAttention.FEF (L)  (-27,-9,64)	DorsalAttention.FEF_L	19
+atlas.DorsalAttention.FEF (R)  (30,-6,64)	DorsalAttention.FEF_R	20
+atlas.DorsalAttention.IPS (L)  (-39,-43,52)	DorsalAttention.IPS_L	21
+atlas.DorsalAttention.IPS (R)  (39,-42,54)	DorsalAttention.IPS_R	22
+atlas.FrontoParietal.LPFC (L)  (-43,33,28)	FrontoParietal.LPFC_L	23
+atlas.FrontoParietal.PPC (L)  (-46,-58,49)	FrontoParietal.PPC_L	24
+atlas.FrontoParietal.LPFC (R)  (41,38,30)	FrontoParietal.LPFC_R	25
+atlas.FrontoParietal.PPC (R)  (52,-52,45)	FrontoParietal.PPC_R	26
+atlas.Language.IFG (L) (-51,26,2)	Language.IFG_L	27
+atlas.Language.IFG (R) (54,28,1)	Language.IFG_R	28
+atlas.Language.pSTG (L) (-57,-47,15)	Language.pSTG_L	29
+atlas.Language.pSTG (R) (59,-42,13)	Language.pSTG_R	30
+atlas.Cerebellar.Anterior (0,-63,-30)	Cerebellar.Anterior	31
+atlas.Cerebellar.Posterior (0,-79,-32)	Cerebellar.Posterior	32
