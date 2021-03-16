@@ -99,19 +99,22 @@ def find_start_end (data, start, end):
 def find_saccades (data):
 
     sacc_indices = []
+    sacc_contain_blinks_indices = []
     saccades = find_start_end (data, "SSACC", "ESACC")
     blinks = find_start_end (data, "SBLINK", "EBLINK")
 
     # remove saccades that contain blinks
-    '''for sacc in saccades:
+    for sacc in saccades:
         for blink in blinks:
             if blink [0] >= sacc[0] and blink [1] <= sacc[1]:
-                saccades. remove (sacc)'''
+                #saccades. remove (sacc)
+                sacc_contain_blinks_indices. extend (list (range (sacc [0], sacc[1] + 1)))
+                break
 
     for sacc in saccades:
         sacc_indices. extend (list (range (sacc [0], sacc[1] + 1)))
 
-    return sacc_indices
+    return sacc_indices, sacc_contain_blinks_indices
 
 #==========================================
 def find_blinks (data):
@@ -160,6 +163,7 @@ def find_conv (data, message):
 
 
 #===========================================
+
 def find_convers (data):
     """
         Find the data associated to the 6 conversations, and put
@@ -168,24 +172,20 @@ def find_convers (data):
     """
 
     convers = find_conv (data, "CONV")
+
     saccades = []
-
-
-    if len (convers) > 1:
-        print ("The eyetracking file contains more that one conversation data!")
-        exit (1)
+    blinks = []
 
     conversations = data [convers[0][1] : convers[0][2]]
-
     conv_cleaned = []
-    blinks = find_blinks (conversations)
-    sacc_indices = find_saccades (conversations)
 
-    # indices of saccdes
-    all = blinks # + sacc_indices
+    blinks_indices = find_blinks (conversations)
+    sacc_indices, _ = find_saccades (conversations)
 
     for j in range (len (conversations)):
-        if j not in all and conversations[j][0] and not is_event (conversations[j]):
+
+        if not is_event (conversations[j]):
+            #if j not in blinks_indices :
             conv_cleaned. append (conversations[j])
 
             if j in sacc_indices:
@@ -194,7 +194,12 @@ def find_convers (data):
             else:
                 saccades. append ([0])
 
-    return conv_cleaned, saccades
+            if j in blinks_indices:
+                blinks. append ([1])
+            else:
+                blinks. append ([0])
+
+    return conv_cleaned, saccades, blinks
 
 # =============================================
 def process_filename (filename, out_dir):
@@ -205,7 +210,8 @@ def process_filename (filename, out_dir):
 
     """ get data from asci files """
     data, comment = read_asci (filename)
-    convers, saccades = find_convers (data)
+    #convers, saccades = find_convers (data)
+    convers, saccades, blinks = find_convers (data)
 
     # get display coordinates
     for line in data:
@@ -219,11 +225,11 @@ def process_filename (filename, out_dir):
     begin = int (convers[0][0])
     for j in range (len (convers)):
         convers[j][0] = (int (convers[j][0]) - begin) / 1000
-        for k in range (1,4):
+        for k in range (1,3):
             convers[j][k] = float (convers[j][k])
 
-    eyetracking_data = np. concatenate ( (np.array (convers) [:,0:3], saccades), axis = 1)
-    eyetracking_data = pd. DataFrame (eyetracking_data, columns = ["Time (s)", "x", "y", "saccades"])
+    eyetracking_data = np. concatenate ( (np.array (convers) [:,0:4], saccades, blinks), axis = 1)
+    eyetracking_data = pd. DataFrame (eyetracking_data, columns = ["Time (s)", "x", "y", "pupil_area", "saccades", "blinks"])
     eyetracking_data. _metadata = ["display_coords"]
     eyetracking_data. display_coords = DISPLAY_COORDS
 

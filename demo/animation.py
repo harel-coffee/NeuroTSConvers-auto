@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from matplotlib.colors import hsv_to_rgb
 from celluloid import Camera
 from ast import literal_eval
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter, AutoMinorLocator)
@@ -25,37 +26,14 @@ if __name__ == '__main__':
 
 	ROIS_desc = pd. read_csv ("brain_areas.tsv", sep = '\t', header = 0)
 
-	annot_l = pd.DataFrame (nib.freesurfer.io.read_annot ("parcellation/lh.BN_Atlas.annot")). transpose ()
-	annot_l. columns = ["Code", "Color", "Label"]
-	annot_l["Label"] = annot_l["Label"].str.decode("utf-8")
-
-	annot_r = pd.DataFrame (nib.freesurfer.io.read_annot ("parcellation/lh.BN_Atlas.annot")). transpose ()
-	annot_r. columns = ["Code", "Color", "Label"]
-	annot_r["Label"] = annot_r["Label"].str.decode("utf-8")
 
 	colors_of_rois =  []
-	for region in regions:
-		label = ROIS_desc. loc [ROIS_desc ["ShortName"] == region, "Label"]. values [0]
-		if label[-1] in ['l', 'L']:
-			color = annot_l. loc [annot_l ["Label"] == label,  "Color"]. values [0]
-		else:
-			color = annot_r. loc [annot_l ["Label"] == label,  "Color"]. values [0]
-		#colors_of_rois. append (ROIS_desc. loc [ROIS_desc["ShortName"] == region, "Color"]. values[0])
-		colors_of_rois. append (color)
 
-	for i in range (len (colors_of_rois)):
-		#colors_of_rois[i] = literal_eval (colors_of_rois[i])[0:3]
-		intensity = colors_of_rois[i][3]
-		colors_of_rois [i] = list (colors_of_rois[i][0:3])
-		colors_of_rois [i] = [colors_of_rois [i][0], colors_of_rois [i][1], colors_of_rois [i][2]]
-		#colors_of_rois [i]. reverse ()
-		colors_of_rois[i] = [float (a) / 255  for a in colors_of_rois[i]] + [intensity]
+# 1000 distinct colors:
+	colors = [hsv_to_rgb([(i * 0.618033988749895) % 1.0, 1, 1]) for i in range(1000)]
 
-	#colors_of_rois. reverse ()
-
-	'''print (regions)
-	print (colors_of_rois)
-	exit (1)'''
+	for k in range (1, len (regions) + 1):
+		colors_of_rois. append (colors[k])
 
 	# SAVE LEGENDS SEPARATELY
 	fig = plt.figure()
@@ -71,14 +49,14 @@ if __name__ == '__main__':
 
 	mpl.style.use('seaborn')
 	# SAVE PREDICTIONS AS A VIDEO
-	fig, ax = plt.subplots (nrows = len (regions), ncols = 1, figsize=(8.1,5.6),  sharex=True)
+	fig, ax = plt.subplots (nrows = len (regions), ncols = 1, figsize=(10,5.6),  sharex=True)
 	#fig.text(0.5, 0.04, 'Time (s)', ha='center')
 	fig.text(0.5, 0.04, 'Time (s)', ha='center')
 	fig.subplots_adjust(
 	    top=0.981,
 	    bottom=0.09,
 	    left=0.03,
-	    right=0.88,
+	    right=0.8,
 	    hspace=0.2,
 	    wspace=0.2
 	)
@@ -93,12 +71,13 @@ if __name__ == '__main__':
 		ax [j]. set_xlim (np.min (index), np. max (index) + 1)
 		ax [j]. xaxis.set_minor_locator(MultipleLocator(5))
 		ax [j]. set_ylim (0, 1.1)
-		ax [j].yaxis. set_major_locator (ticker. MultipleLocator (1))
+		ax [j]. yaxis. set_major_locator (ticker. MultipleLocator (1))
+		ax [j]. set_yticklabels([])
 
 	for i in range (1,len (index)):
 		for j in range (len (regions)):
-			ax[j]. plot (index [:i], df. iloc [:i, j], linewidth = 3, color = colors_of_rois [j], alpha = 1, label = regions[j])
-			ax[j]. legend(['%s'%regions[j]], bbox_to_anchor=(1, 1), loc=2, borderaxespad=0.05, markerscale = 0.5, handlelength=0.5, fontsize = 14)
+			ax[j]. plot (index [:i], df. iloc [:i, j], linewidth = 2, color = colors_of_rois [j], alpha = 1, label = regions[j])
+			ax[j]. legend(['%s'%regions[j]], bbox_to_anchor=(1, 1), loc=2, borderaxespad=0.05, markerscale = 0.5, handlelength=0.5, fontsize = 10)
 		camera. snap()
 
 

@@ -106,7 +106,7 @@ def extra_features (pred_path, out_dir, type = "eyetracking"):
 	""" eyetracking data """
 
 	video_output = "%s/Outputs/generated_time_series/video"%out_dir
-	eyetracking_output = "%s/Outputs/generated_time_series/%s"%(out_dir, type)
+	pickle_output = "%s/Outputs/generated_time_series/%s"%(out_dir, type)
 	video_path = glob.glob ("%s/Inputs/video/*.avi"%out_dir)
 	if len (video_path) == 0:
 		print ("Error: there is no input video!")
@@ -118,32 +118,49 @@ def extra_features (pred_path, out_dir, type = "eyetracking"):
 	if out_dir[-1] != '/':
 		out_dir += '/'
 
-	openface_features = glob.glob (video_output + "/" + video_path[:-4]. split ('/')[-1] + "/*.csv")[0]
+	#print (glob.glob (video_output + "/*.pkl")[0])
+	#print (glob.glob (video_output + "/" + video_path[:-4]. split ('/')[-1] + "/*"))
+	#exit (1)
+	openface_features = glob.glob (video_output + "/*.pkl")[0]
 
 	if type == "eyetracking":
-		gaze_coordinates_file = glob.glob ("%s/Inputs/eyetracking/*.pkl"%out_dir)[0]
-		out = os. system ("python %s/src/generate_ts/eyetracking.py %s %s -d -eye %s -faf %s -sv"%(pred_path, video_path, eyetracking_output, gaze_coordinates_file, openface_features))
+		try:
+			eyelink_output_file = glob.glob ("%s/Inputs/eyetracking/*.txt"%out_dir)[0]
+		except:
+			print ("Error, there is no eyetracking .txt file in the inputs!")
+			exit (1)
 
-	elif type == "emotions":
-		out = os. system ("python %s/src/generate_ts/facial_emotions.py -d %s %s"%(pred_path, video_path, eyetracking_output))
+		os. system ("python %sread_eyelink_data.py %s %sOutputs/generated_time_series/eyetracking/"%(out_dir, eyelink_output_file, out_dir))
 
-	elif type == "facial":
-		out = os. system ("python %s/src/generate_ts/facial_features.py %s %s -d -faf %s"%(pred_path, video_path, eyetracking_output, openface_features))
+		try:
+			gaze_coordinates_file = glob.glob ("%s/Outputs/generated_time_series/eyetracking/*.pkl"%out_dir)[0]
+		except:
+			print ("Error, there is no eyetracking pkl file in the outputs!")
+			exit (1)
 
-	elif type == "smiles":
-		out = os. system ("python %s/src/generate_ts/dlib_smiles.py -d %s %s"%(pred_path, video_path, eyetracking_output))
+		out = os. system ("python %s/src/generate_ts/eyetracking.py %s %s -d -eye %s -faf %s -sv"%(pred_path, video_path, pickle_output, gaze_coordinates_file, openface_features))
 
+		return pd. read_pickle ("%s/facial_features_eyetracking.pkl"%pickle_output)
 
-	eyetracking_filename = glob.glob ("%s/*.pkl"%eyetracking_output)[0]
-	eyetracking = pd. read_pickle (eyetracking_filename)
+	else:
+		if type == "emotions":
+			out = os. system ("python %s/src/generate_ts/facial_emotions.py -d %s %s"%(pred_path, video_path, pickle_output))
 
-	return eyetracking
+		elif type == "facial":
+			out = os. system ("python %s/src/generate_ts/facial_features.py %s %s -d -faf %s"%(pred_path, video_path, pickle_output, openface_features))
+
+		elif type == "smiles":
+			out = os. system ("python %s/src/generate_ts/dlib_smiles.py -d %s %s"%(pred_path, video_path, pickle_output))
+
+		out_filename = glob.glob ("%s/*.pkl"%pickle_output)[0]
+
+		return pd. read_pickle (out_filename)
 
 #---------------------------------------------------#
 if __name__ == '__main__':
 	parser = argparse. ArgumentParser ()
 	requiredNamed = parser.add_argument_group('Required arguments')
-	requiredNamed. add_argument ('--regions','-rg', help = "Numbers of brain areas to predict (see brain_areas.tsv)", nargs = '+', type=int)
+	#requiredNamed. add_argument ('--regions','-rg', help = "Numbers of brain areas to predict (see brain_areas.tsv)", nargs = '+', type=int)
 	requiredNamed.add_argument("--language", "-lg", default = "fr", choices = ["fr", "eng"], help="Language.")
 	requiredNamed. add_argument ('--openface_path','-ofp', help = "path of Openface", required=True)
 	requiredNamed. add_argument ('--pred_module_path','-pmp', help = "path of the prediction module", required=True)
@@ -158,9 +175,9 @@ if __name__ == '__main__':
 	# GET REGIONS NAMES FOR THEIR CODES
 	brain_areas_desc = pd. read_csv ("brain_areas.tsv", sep = '\t', header = 0)
 
-	regions = []
+	'''regions = []
 	for num_region in args. regions:
-		regions. append (brain_areas_desc . loc [brain_areas_desc ["Code"] == num_region, "Name"]. values [0])
+		regions. append (brain_areas_desc . loc [brain_areas_desc ["Code"] == num_region, "Name"]. values [0])'''
 
 	""" CREATE OUTPUT DIRECTORIES OF THE GENERATED TIME SERIES """
 	for dirct in ["%s/Outputs"%args.input_dir, out_dir, "%s/Outputs/generated_time_series/speech"%args.input_dir, \
@@ -179,7 +196,7 @@ if __name__ == '__main__':
 	openface_features (args.pred_module_path, args.input_dir, args.openface_path)
 	print ("Processing openface features, ... Done.")
 
-	# Extract other facial features: emotions, facial based features ...
+	""" Extract other facial features: emotions, facial based features """
 	eyetracking = extra_features (args.pred_module_path, args.input_dir, "eyetracking")
 	print ("Processing eyetracking, ... Done.")
 	emotions = extra_features (args.pred_module_path, args.input_dir, "emotions")

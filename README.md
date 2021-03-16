@@ -35,7 +35,7 @@ The aim is to detect the behavioral features that are responsible for the activa
 ## Training
   * After finding the appropriate model for each brain area, we can train the models on all available data:
     ```bash
-     python src/train_models.py -rg 3 4
+     python src/train_models.py -rg 1 2 3 4 5 6 7 8 9 10
     ```
 ## Demo
   * To run a demo, we need data of a conversation between an interlocutor (human or robot), and a subject (human, on which we try to predict fMRI responses). The data consist of the video of the interlocutor, and the audios of both the participant and the interlocutor (with transcriptions), and an eyetracking file of the subject
@@ -47,17 +47,13 @@ The aim is to detect the behavioral features that are responsible for the activa
 
   ```bash
   # Generate time series from input data
-  python demo/generate_time_series.py -rg 3 4 7 8 9 10 21 -pmp .
-  -in Demo -ofp "path to Openface"
+  python demo/generate_time_series.py -pmp .  -in demo -ofp ../../OpenFace
 
   # Compute the predictions
-  python demo/predict.py -rg 3 4 7 8 9 10 21 -pmp . -in demo -t r
+  python demo/predict.py -rg 1 2 3 4 5 6 7 8 9 10 -pmp . -in demo -t r -lag 7
 
   # Time series animation using the obtained predictions
   python demo/animation.py -in demo
-
-  # Visualize the predictions in the brain
-  python demo/visualization.py -in demo
   ```
 
   * Description of the used arguments:
