@@ -5,6 +5,8 @@ import os
 import glob
 
 from prediction. tools import *
+from prediction. mlp import *
+from prediction. lstm import *
 from sklearn import preprocessing
 from ast import literal_eval
 
@@ -32,7 +34,7 @@ def get_features_from_lagged (lagged_variables):
 
 
 #============================================================
-def  train_model (X, y, model, params):
+def  train_model (X, y, model, params, lag):
 
 	if model == "LSTM":
 		pred_model = LSTM_MODEL (lag - 2)
@@ -69,7 +71,7 @@ def  train_model (X, y, model, params):
 	return pred_model
 
 #============================================================
-def train_model_area (X, y, target_column, convers_type):
+def train_model_area (X, y, target_column, convers_type, lag):
 
 	""" X: dataframe with columns
 		y: dataframe one column, the target variable
@@ -81,7 +83,7 @@ def train_model_area (X, y, target_column, convers_type):
 	best_score = 0
 
 	for filename in prediction_files:
-		if "LSTM" in filename or "MLP" in filename  or "baseline" in filename:
+		if "baseline" in filename:
 			continue
 
 		model_name = filename. split ('/')[-1]. split ('_') [0]
@@ -118,20 +120,23 @@ def train_model_area (X, y, target_column, convers_type):
 	print ("Best model: %s"%best_model)
 	print ("... Done\n")
 
-	pred_model = train_model (X_train, y, best_model, best_model_params)
+	pred_model = train_model (X_train, y, best_model, best_model_params, lag)
 
 	# save the model
-	joblib. dump (pred_model, "trained_models/%s_%s_%s.pkl"%(best_model, target_column, convers_type), compress=3)
+	if best_model in ["MLP", "LSTM"]:
+		pred_model. save ( "trained_models/%s_%s_%s.h5"%(best_model, target_column, convers_type))
+	else:
+		joblib. dump (pred_model, "trained_models/%s_%s_%s.pkl"%(best_model, target_column, convers_type), compress=3)
 
 	return best_model, best_behavioral_predictors
 
 #====================================================================#
 
-def train_all (X, Y, regions, short_regions, type = "HH"):
+def train_all (X, Y, regions, short_regions, type, lag):
 
 	output = []
 	for target_column, short_target_column in zip (regions, short_regions):
-		best_model, features = train_model_area (X, Y. loc [:, target_column], short_target_column, type)
+		best_model, features = train_model_area (X, Y. loc [:, target_column], short_target_column, type, lag)
 		output. append ([short_target_column, best_model, features])
 
 	return pd.DataFrame (output, columns = ["ROI", "Prediction model", "Predictive Features"])
@@ -139,6 +144,7 @@ def train_all (X, Y, regions, short_regions, type = "HH"):
 if __name__=='__main__':
 	parser = argparse. ArgumentParser ()
 	parser. add_argument ('--regions','-rg', nargs = '+', type=int)
+	parser. add_argument ("--lag", "-lag", default = 7, type=int)
 	args = parser.parse_args()
 
 	# create output folder if not exist
@@ -151,7 +157,7 @@ if __name__=='__main__':
 	short_brain_areas = []
 
 	for num_region in args. regions:
-		brain_areas. append (brain_areas_desc . loc [brain_areas_desc ["Code"] == num_region, "Name"]. values [0])
+		brain_areas. append (brain_areas_desc . loc [brain_areas_desc ["Code"] == num_region, "ShortName"]. values [0])
 		short_brain_areas. append (brain_areas_desc . loc [brain_areas_desc ["Code"] == num_region, "ShortName"]. values [0])
 
 	# Read training data for human-human and human-robot
@@ -162,5 +168,5 @@ if __name__=='__main__':
 	Y_hr = pd. read_pickle ("concat_time_series/discr_bold_hr_data.pkl")
 
 	# Train the models for each brain area
-	results_hh = train_all (X_hh, Y_hh, brain_areas, short_brain_areas, "HH")
-	results_hr = train_all (X_hr, Y_hr, brain_areas, short_brain_areas, "HR")
+	results_hh = train_all (X_hh, Y_hh, brain_areas, short_brain_areas, "HH", args.lag)
+	results_hr = train_all (X_hr, Y_hr, brain_areas, short_brain_areas, "HR", args.lag)
