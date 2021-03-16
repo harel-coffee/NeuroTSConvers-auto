@@ -35,7 +35,7 @@ The aim is to detect the behavioral features that are responsible for the activa
 ## Training
   * After finding the appropriate model for each brain area, we can train the models on all available data:
     ```bash
-     python src/train_models.py -rg 1 2 3 4 5 6 7 8 9 10
+     python src/train_models.py -rg 1 2 3 4 5 6 7 8 9 10 -lag 7
     ```
 ## Demo
   * To run a demo, we need data of a conversation between an interlocutor (human or robot), and a subject (human, on which we try to predict fMRI responses). The data consist of the video of the interlocutor, and the audios of both the participant and the interlocutor (with transcriptions), and an eyetracking file of the subject
