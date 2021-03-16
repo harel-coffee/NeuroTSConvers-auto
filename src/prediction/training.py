@@ -14,8 +14,8 @@ from ast import literal_eval
 
 from sklearn.metrics import recall_score, f1_score, balanced_accuracy_score
 
-from src. prediction. lstm import *
-from src. prediction. mlp import *
+from src.prediction.lstm import *
+from src.prediction.mlp import *
 
 #===========================================
 global_dict_models = {

@@ -15,13 +15,10 @@ import argparse
 #================================================
 def otsu (M, cols):
 
-	means_bold_silence = pd.read_pickle ("disc_means.pkl")
-	alpha_bold_activation = np.round (means_bold_silence. mean (), 2)
-	print (alpha_bold_activation)
 	output = []
 
 	for j in range (0, M.shape [1]):
-		disc_threshold = filters. threshold_otsu (M[:, j:j+1]) + alpha_bold_activation
+		disc_threshold = filters. threshold_otsu (M[:, j:j+1])
 		for i in range (M.shape [0]):
 			if M[i,j] < disc_threshold:
 				M[i,j] = 0
@@ -51,17 +48,13 @@ def find_peaks_ (y, height = 0):
 #===============================================================
 def discretize_array (M_, cols, min, mean = False, peak = False):
 
-	means_bold_silence = pd.read_pickle ("disc_means.pkl")
-	alpha_bold_activation = np.round (means_bold_silence. mean (), 2)
-	print (alpha_bold_activation)
-
 	M = M_.copy ()
 	for j in range (0, M.shape [1]):
 		if peak:
 			peaks, _ = find_peaks (M[:,j], height=0.0)
 			print (len (peaks))
 		if mean:
-			min = np. mean (M[:,j]) + alpha_bold_activation
+			min = np. mean (M[:,j])
 			#print (cols[j], min)
 		for i in range (M.shape [0]):
 			if M[i,j] < min:

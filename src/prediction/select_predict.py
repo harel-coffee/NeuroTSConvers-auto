@@ -188,7 +188,7 @@ def predict_area (behavioral_variables, target_column, model, lag, filename, fin
 
 		else:
 			if model in ["LSTM", "MLP"] or find_params:
-				set_k = list (range (2, 20, 4))
+				set_k = list (range (2, 40, 4))
 			elif all_m:
 				set_k = list (range (1, 31, 1))
 			elif all:
@@ -203,6 +203,8 @@ def predict_area (behavioral_variables, target_column, model, lag, filename, fin
 def predict_multiple_areas (_regions, lag, model, remove, _find_params, all, all_m, method = "None"):
 
 	print ("-- MODEL :", model)
+
+	print (_regions, lag, model, remove, _find_params, all, all_m, method)
 
 	if _find_params:
 		colnames = ["region", "dm_method", "lag", "models_params", "predictors_dict",   "predictors_list", "selected_predictors",

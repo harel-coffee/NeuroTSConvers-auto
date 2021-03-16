@@ -3,7 +3,9 @@ import numpy as np
 import pandas as pd
 import random as rd
 from ast import literal_eval
-from imblearn.over_sampling import ADASYN # for imbalanced data
+
+import imblearn
+
 from sklearn.feature_selection import SelectFromModel
 from sklearn import preprocessing
 
@@ -122,7 +124,7 @@ def train_test_from_df (df, y, perc, pos, normalize = False, resample = False):
 
 	# Handling  the oversampling in training data (if they are imbalanced) with the ADASYN algorithm
 	if resample:
-		res_model = ADASYN (random_state=5)
+		res_model = imblearn.over_sampling.ADASYN (random_state=5)
 		try:
 			train_set, y_train_ =  res_model. fit_resample (train_set, y_train_)
 			#test_set, y_test_ =  RandomOverSampler (random_state=5). fit_resample (test_set, y_test_)
@@ -163,7 +165,7 @@ def specific_feature_selection (train_set, test_set, y_train,  k, method, model)
 	# Normal feature selection by specifing the number of features to select
 	else:
 		train_set_select, select_indices, selector = generic_reduction (train_set, y_train, method = method, n_comps = k, estimator_name = "RF")
-		if method in ["PCA", "KPCA", "ICA", "TREE"]:
+		if method in ["PCA", "KPCA", "ICA", "Model_RANK"]:
 			test_set_select = selector. transform (test_set)
 		else:
 			test_set_select = test_set [:, [int(a) for a in select_indices]]

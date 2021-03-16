@@ -45,14 +45,35 @@ def get_minmax (frame, land_marks, item_name):
 	return xmin[0], xmax[0], ymin[1], ymax[1]
 
 #===========================================================#
+def eyes_landmark_to_rect (frame, land_marks):
+
+	lxmin, lxmax, lymin, lymax = get_minmax (frame, land_marks, "left_eye")
+	rxmin, rxmax, rymin, rymax = get_minmax (frame, land_marks, "right_eye")
+
+	xmin = min (lxmin, rxmin)
+	xmax = max (lxmax, rxmax)
+
+	ymin = min (lymin, rymin)
+	ymax = max (lymax, rymax)
+
+	xscale =  int (0.2 * (xmax - xmin))
+	yscale =  int (0.5 * (ymax - ymin))
+
+	x = xmin - xscale
+	w = xmax - x + xscale
+
+	y = ymin - yscale
+	h = ymax - y + yscale
+
+	return (x, y, w, h)
+#===========================================================#
 # extract the location of an item as rectangle using ladmarks and the image
 def landmark_to_rect (frame, land_marks, item_name):
 
 	xmin, xmax, ymin, ymax = get_minmax (frame, land_marks, item_name)
-	#print (xmin, xmax, ymin, ymax)
 	if item_name in ["right_eye", "left_eye"]:
 		xscale =  int (0.5 * (xmax - xmin))
-		yscale =  int (0.8 * (ymax - ymin))
+		yscale =  int (0.9 * (ymax - ymin))
 
 	elif item_name == "face":
 		xscale =  int (0.05 * (xmax - xmin))
@@ -69,8 +90,8 @@ def landmark_to_rect (frame, land_marks, item_name):
 		return (x, y, w, h)
 
 	elif item_name == "mouth":
-		xscale =  int (0.1 * (xmax - xmin))
-		yscale =  int (0.3 * (ymax - ymin))
+		xscale =  int (0.2 * (xmax - xmin))
+		yscale =  int (0.5 * (ymax - ymin))
 
 	x = xmin - xscale
 	w = xmax - x + xscale
@@ -116,7 +137,7 @@ if __name__ == '__main__':
 	parser.add_argument("--save",'-sv', help = "Save the new video.", action = "store_true")
 	parser.add_argument("--demo",'-d', help = "If this script is used for a demo.", action = "store_true")
 	parser.add_argument("--eyetracking",'-eye', help = "the path of the eyetracking file.")
-	parser.add_argument("--facial_features",'-faf', help = "the path of the facial features file (csv file).")
+	parser.add_argument("--facial_features",'-faf', help = "the path of the facial features file (pickle file).")
 	args = parser.parse_args()
 
 	if args. out_dir[-1] != '/':
@@ -132,7 +153,7 @@ if __name__ == '__main__':
 	else:
 		conversation_name = args. video.split ('/')[-1]. split ('.')[0]
 		eye_tracking_file = "time_series/%s/gaze_coordinates_ts/%s.pkl"%(subject, conversation_name)
-		openface_file = "time_series/%s/openface_features_ts/%s/%s.csv"%(subject, conversation_name, conversation_name)
+		openface_file = "time_series/%s/openface_ts/%s.pkl"%(subject, conversation_name)
 
 	out_file = args. out_dir + conversation_name
 	if os.path.isfile ("%s.pkl"%out_file):
@@ -161,8 +182,11 @@ if __name__ == '__main__':
 
 	# read eyetracking and openface csv files
 	eye_tracking_data = pd. read_pickle (eye_tracking_file) #. values. astype (float)
+
 	saccades = eye_tracking_data . loc [:, ["Time (s)","saccades"]]. values. astype (float)
-	openface_data = pd. read_csv (openface_file, sep = ',', header = 0)
+	blinks = eye_tracking_data . loc [:, ["Time (s)","blinks"]]. values. astype (float)
+	pupil_area = eye_tracking_data . loc [:, ["Time (s)","pupil_area"]]. values. astype (float)
+	openface_data = pd. read_pickle (openface_file)
 
 	# read DISPLAY_COORDS from metadata
 	display_coords = eye_tracking_data. display_coords
@@ -173,11 +197,23 @@ if __name__ == '__main__':
 	for i in range (1, frames_nb):
 		video_index. append (1.0 / fps + video_index [i - 1])
 
+	# eliminates nan from coordinates (due to blinks)
+	x = eye_tracking_data[:,0:3]
+	#print (x)
+	#exit (1)
+	indice_nans = []
+	for i in range (len (x)):
+		if np.isnan(x[i]).any():
+			indice_nans. append (i)
+	x = np.delete(x, indice_nans, 0)
+	#print (x)
+	#exit (1)
 	# resample gaze coordinates to the video frequency
-	gaze_coordiantes = resampling. resample_ts (eye_tracking_data[:,0:3], video_index, mode = "mean")
+	gaze_coordiantes = resampling. resample_ts (x, video_index, mode = "mean")
+
 
 	# extract time index and 2D landmarks columns from openface data
-	cols = [" timestamp", " success"]
+	cols = [" timestamp", " confidence"]
 	for i in range (68):
 		cols = cols + [" x_%d"%i, " y_%d"%i]
 
@@ -198,10 +234,10 @@ if __name__ == '__main__':
 			break
 
 		row = [current_time, 0, 0, 0]
-		success = openface_data [nb_frames, 1]
+		confidence = openface_data [nb_frames, 1]
 
 		# check first if landmarks detection has not been failed
-		if success:
+		if confidence >= 0.9:
 			lds = openface_data [nb_frames, 2: ]
 			landmarks = []
 
@@ -210,20 +246,24 @@ if __name__ == '__main__':
 
 			face = landmark_to_rect (bgr_image, landmarks, "face")
 			mouth = landmark_to_rect (bgr_image, landmarks, "mouth")
-			right_eye = landmark_to_rect (bgr_image, landmarks, "right_eye")
-			left_eye = landmark_to_rect (bgr_image, landmarks, "left_eye")
+			eyes = eyes_landmark_to_rect (bgr_image, landmarks)
 
-			'''cv2. rectangle (bgr_image, face, (0,255,0), 3)
-			cv2. rectangle (bgr_image, mouth, (0,255,0), 3)
-			cv2. rectangle (bgr_image, right_eye, (0,255,0), 3)
-			cv2. rectangle (bgr_image, left_eye, (0,255,0), 3)'''
-			for x, y in landmarks:
-				cv2.circle (bgr_image, (x, y), 2, (255, 0, 0), -1)
+			if args. show:
+				cv2. rectangle (bgr_image, face, (0,255,0), 3)
+				cv2. rectangle (bgr_image, mouth, (0,255,0), 3)
+				cv2. rectangle (bgr_image, eyes, (0,255,0), 3)
+
+				for x, y in landmarks:
+					cv2.circle (bgr_image, (x, y), 2, (255, 0, 0), -1)
 
 			# rescale coordinate according the screen of the experience
-			x = (gaze_coordiantes [nb_frames, 1]  / float (display_coords[0])) * frame_width   #1279 1919
-			y = (gaze_coordiantes [nb_frames, 2] / float (display_coords[1])) * frame_height   #1023 1079
+			translation_origin_x  =  int ( (float (display_coords[0]) -  bgr_image. shape[1]) / 2)
+			translation_origin_y  =  int ( (float (display_coords[1]) -  bgr_image. shape[0]) / 2)
+			#x = (gaze_coordiantes [nb_frames, 1] - 320)#   / float (display_coords[0])) * frame_width   #1279 1919
+			#y = (gaze_coordiantes [nb_frames, 2] - 272)# / float (display_coords[1])) * frame_height   #1023 1079
 
+			x = (gaze_coordiantes [nb_frames, 1] - translation_origin_x)
+			y = (gaze_coordiantes [nb_frames, 2] - translation_origin_y)
 
 			# check if eyetracking coordinates are not nan
 			if not np.isnan (x) and not np.isnan (y):
@@ -231,16 +271,14 @@ if __name__ == '__main__':
 				y = int (y)
 
 				# plot eyetracking point
-				# bgr_image = cv2.resize (bgr_image, (1279, 1023))
 				cv2.circle(bgr_image, (x, y), 3, (0,0,255), -1)
-
 
 				# Append observations to time series
 				if isin_rect (face, x, y):
 					row [1] = 1
 					if isin_rect (mouth, x, y):
 						row [2] = 1
-					if isin_rect (right_eye, x, y) or isin_rect (left_eye, x, y):
+					if isin_rect (eyes, x, y):
 						row [3] = 1
 
 		face_time_series. append (row)
@@ -267,30 +305,26 @@ if __name__ == '__main__':
 	for i in range (1, 50):
 		physio_index. append (1.205 + physio_index [i - 1])
 
-	# resampling data according the BOLD signal frequency
-	saccades = resampling. resample_ts (saccades, physio_index, mode = "sum")[:, 1:]
+	# resampling saccades and blinks
+	saccades = resampling. resample_ts (saccades, physio_index, mode = "mean")[:, 1:]
+	blinks = resampling. resample_ts (blinks, physio_index, mode = "mean")[:, 1:]
+	pupil_area = resampling. resample_ts (pupil_area, physio_index, mode = "mean")[:, 1:]
 	#coordinates_resampled = resampling. resample_ts (eye_tracking_data, physio_index, mode = "mean")
 
 	# compute and resample the gradient of the gaze coordinates
 	coordinates_gradient = np. gradient (eye_tracking_data [:,1:3], eye_tracking_data [:,0], axis = 0)
+	movement_quantity  = np. sum (np. square (coordinates_gradient), axis = 1). reshape ((-1,1))
 
 	# movement quantity
-	#movement_quantity = np. reshape (np. sqrt (np. sum (np. square (coordinates_gradient), axis = 1)), (-1, 1))
-	movement_quantity = np. concatenate ((np. reshape (eye_tracking_data [:,0], (-1, 1)), coordinates_gradient), axis = 1)
+	movement_quantity = np. concatenate ((np. reshape (eye_tracking_data [:,0], (-1, 1)), movement_quantity), axis = 1)
+	movement_quantity = resampling. resample_ts (movement_quantity, physio_index, mode = "mean", rotation = False, pixel = True) # including time
 
-
-	movement_quantity = resampling. resample_ts (movement_quantity, physio_index, mode = "energy", rotation = False, pixel = True)[:, 1:]
-
-	# mean of speed over axis X and Y
-	mean_x_y_gradient = np. reshape (np. mean (coordinates_gradient, axis = 1), (-1,1))
-	mean_x_y_gradient = np. concatenate ((np. reshape (eye_tracking_data [:,0], (-1, 1)), mean_x_y_gradient), axis = 1)
-	mean_x_y_gradient = resampling. resample_ts (mean_x_y_gradient, physio_index, mode = "mean")
 
 	# resample facial-time-series: face, mouth and eyes looks
-	face_time_series = resampling. resample_ts (np. array (face_time_series), physio_index, mode = "sum")[:, 1:]
+	face_time_series = resampling. resample_ts (np. array (face_time_series), physio_index, mode = "mean")[:, 1:]
 
 	# Concatenate all columns in one dataframe
-	output_time_series = pd.DataFrame (np. concatenate ((mean_x_y_gradient, movement_quantity, saccades, face_time_series), axis = 1),
-										columns = ["Time (s)", "Gaze_speed_P", "Gaze_movement_energy_P", "Saccades_P", "Face_looks_P", "Mouth_looks_P", "Eyes_looks_P"])
+	output_time_series = pd.DataFrame (np. concatenate ((movement_quantity, saccades, blinks, pupil_area, face_time_series), axis = 1),
+										columns = ["Time (s)", "Gaze_movement_quantity_P", "Saccades_P", "Blinks_P", "Pupil_area_P", "Face_looks_P", "Mouth_looks_P", "Eyes_looks_P"])
 
 	output_time_series.to_pickle (out_file + ".pkl")

@@ -2,9 +2,13 @@
 # Author: Youssef Hmamouche
 
 import numpy as np
-from keras.layers import LSTM
-from keras.models import Sequential
-from keras.layers.core import Dense, Activation, Dropout
+import tensorflow as tf
+from tensorflow.keras.layers import LSTM, Dropout, Dense, Activation
+from tensorflow.keras.optimizers import SGD, Adam
+from tensorflow.keras.models import Sequential
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 #--------------------------------------------------------
 class LSTM_MODEL:
@@ -19,37 +23,39 @@ class LSTM_MODEL:
     def load_model (self, file_path):
         self. model. load_model (file_path)
 
-    def fit (self, X, Y, epochs = 100, batch_size = 1, verbose = 0, shuffle = True):
+    def fit (self, X, Y, epochs = 30, batch_size = 32, verbose = 0, shuffle = True):
 
-        #self.disc_value = np.mean (Y. flatten ()) - 0.06
         n_features =  int (X.shape[1] / self.look_back)
         n_samples = X.shape[0]
 
-        n_neurons = int (0.67 * (n_features + 1))
+        n_neurons = int (2 * n_features)
 
         new_shape = [n_samples, self.look_back, n_features]
+
         X_reshaped = np. reshape (X, new_shape, order = 'F')
 
         self.model = Sequential()
         self. model. add (LSTM (n_neurons, input_shape=(self. look_back , n_features)))
+        self. model.add(Dropout(0.2))
         self. model. add (Dense(1, activation='sigmoid'))
-        self.model.compile (loss = 'binary_crossentropy', optimizer = 'adam', metrics = ['accuracy'])
-        #self. model.compile(loss='mean_squared_error', optimizer='adam')
 
+        opt = SGD(lr=0.01)
+        self.model.compile (loss = 'binary_crossentropy', optimizer = opt, metrics = ['accuracy'])
         self.model.fit (X_reshaped, Y,  epochs = epochs, batch_size = batch_size, verbose = verbose, shuffle = shuffle)
 
     def predict (self, X):
         X_reshaped = np. reshape (X, (X.shape[0], self. look_back, int (X.shape[1] / self. look_back)), order = 'F')
         preds = self. model. predict (X_reshaped, batch_size = 1). flatten ()
-        for i in range (len (preds)):
-            if preds [i] <= self.disc_value:
-                preds [i] = 0
-            else:
-                preds [i] = 1
         return preds
 
-    def get_weights (self):
-          return self. model. layers[0]. get_weights ()
+    def get_normalized_weights (self):
+        for layer in self.model.layers:
+            weightLSTM = layer.get_weights()
+            break
+        warr,uarr, barr = weightLSTM
+        weights = np. abs (np.mean (warr, axis=1)). tolist ()
+        sum = np.sum (weights)
+        return [a / sum for a in weights]
 
 
 #--------------------------------------------------------

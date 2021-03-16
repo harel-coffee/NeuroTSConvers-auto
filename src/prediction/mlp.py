@@ -1,47 +1,65 @@
 # -*- coding: utf-8 -*-
 # Author: Youssef Hmamouche
-
-from keras.models import Sequential
-from keras.layers.core import Dense, Dropout
 import tensorflow as tf
+from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.optimizers import SGD, Adam
 import numpy as np
+
+np.random.seed(1234)
+tf.random.set_seed(1234)
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 #--------------------------------------------------------
 class MLP_MODEL:
-    #---------------------------------------#
-    def __init__(self, lag):
-        self. lag = lag
-        self. model = None
+	#---------------------------------------#
+	def __init__(self, lag):
+		self. lag = lag
+		self. model = None
 
-    def save (self, file_path):
-        self. model. save (file_path)
+	def save (self, file_path):
+		self. model. save (file_path)
 
-    def load_model (self, file_path):
-        self. model. load_model (file_path)
+	def load (self, file_path):
+		self. model = load_model(file_path)
 
-    #---------------------------------------#
-    def fit (self, X, Y, epochs = 100, batch_size = 1, verbose = 0, shuffle = False):
+	def summary (self):
+		self. model. summary ()
 
-        n_samples = X.shape[0]
-        n_features = X.shape[1]
-        n_neurons_1 = int (0.67 * (n_features + 1))
-        n_neurons_2 = int (0.33 * (n_features + 1))
+	#---------------------------------------#
+	def fit (self, X, Y, epochs = 30, batch_size = 32, verbose = 0, shuffle = True):
 
-        self. model = Sequential()
-        self. model. add (Dense (n_neurons_1, activation='relu',  input_dim = n_features))
-        self. model.add(Dropout(0.2))
-        #self. model. add (Dense (n_neurons_2, activation='relu',  input_dim = n_features))
-        self. model. add (Dense (1, activation='sigmoid'))
+		n_samples = X.shape[0]
+		n_features = X.shape[1]
+		n_neurons_1 = int (0.67 * (n_features + 1))
+		n_neurons_2 = int (0.33 * (n_features + 1))
 
-        self.model.compile (loss = 'binary_crossentropy', optimizer = 'adam', metrics = ['accuracy'])
-        self.model.fit (X, Y,  epochs = epochs, batch_size = batch_size, verbose = verbose, shuffle = shuffle)
+		self. model = Sequential()
+		self. model. add (Dense (n_neurons_1, activation='relu',  input_dim = n_features))
+		self. model.add(Dropout(0.2))
+		self. model. add (Dense (n_neurons_2, activation='relu',  input_dim = n_features))
+		#self. model.add(Dropout(0.2))
+		#self. model. add (Dense (100, activation='relu',  input_dim = n_features))
+		self. model.add(Dropout(0.25))
+		self. model. add (Dense (1, activation='sigmoid'))
 
-    #---------------------------------------#
-    def predict (self, X):
-        preds = self. model. predict (X, batch_size = 1). flatten ()
-        for i in range (len (preds)):
-            if preds [i] < 0.5:
-                preds [i] = 0
-            else:
-                preds [i] = 1
-        return preds
+		opt = SGD(lr=0.01)
+		self.model.compile (loss = 'binary_crossentropy', optimizer = opt, metrics = ['accuracy'])
+		self.model.fit (X, Y,  epochs = epochs, batch_size = batch_size, verbose = verbose, shuffle = shuffle)
+
+	#---------------------------------------#
+	def predict (self, X):
+		preds = self. model. predict (X, batch_size = 1). flatten ()
+		return preds
+
+	def get_normalized_weights (self):
+		for layer in self.model.layers:
+			weights = layer.get_weights()[0]
+			break
+		#print (len (weights))
+		weights = np. abs (np.mean (weights, axis=1)). tolist ()
+		sum = np.sum (weights)
+
+		return [a / sum for a in weights]

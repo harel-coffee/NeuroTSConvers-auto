@@ -25,8 +25,6 @@ def get_lagged_colnames (behavioral_predictors, lag, dict = True):
 
 	for item in columns:
 		lagged_columns. extend ([item + "_t%d"%(p) for p in range (lag, 2, -1)])
-		#lagged_columns. extend ([item + "_sum"])
-		#lagged_columns. extend ([item + "_mean", item + "_std"])
 
 	return (lagged_columns)
 
@@ -248,7 +246,7 @@ if __name__ == '__main__':
 	min_std = 0.000001
 	max_perc_cst = 0.95
 
-	to_remove = []
+	'''to_remove = []
 	for j in range (behavioral_hh_data. shape [1]):
 		if behavioral_hh_data. iloc [:, j]. std() < min_std:
 			to_remove. append (j)
@@ -258,12 +256,12 @@ if __name__ == '__main__':
 		if (perc_cst_values > max_perc_cst):
 			to_remove. append (j)
 
-	print (behavioral_hh_data. columns [to_remove])
-	behavioral_hh_data. drop (behavioral_hh_data. columns [to_remove], axis = 1, inplace = True)
+	#print (behavioral_hh_data. columns [to_remove])
+	behavioral_hh_data. drop (behavioral_hh_data. columns [to_remove], axis = 1, inplace = True)'''
 
 	print (18 * '-')
 	# removing columns with low standart deviation
-	to_remove = []
+	'''to_remove = []
 	for j in range (behavioral_hr_data. shape [1]):
 		if behavioral_hr_data. iloc [:, j]. std() < min_std:
 			to_remove. append (j)
@@ -273,8 +271,8 @@ if __name__ == '__main__':
 		if (perc_cst_values > max_perc_cst):
 			to_remove. append (j)
 
-	print (behavioral_hr_data. columns [to_remove])
-	behavioral_hr_data. drop (behavioral_hr_data. columns [to_remove], axis = 1, inplace = True)
+	#print (behavioral_hr_data. columns [to_remove])
+	behavioral_hr_data. drop (behavioral_hr_data. columns [to_remove], axis = 1, inplace = True)'''
 
 	# Initilize the normaliers
 	min_max_scaler_hh = normalizer (behavioral_hh_data)
@@ -288,4 +286,25 @@ if __name__ == '__main__':
 	min_max_scaler_hh. save ("trained_models/min_max_scaler_hh")
 	min_max_scaler_hr. save ("trained_models/min_max_scaler_hr")
 
+	f = open('brain_areas.tsv', 'a')
+
+	# Make brain areas names short
+	short_bold_columns = list (bold_hh_data. columns)
+	for i  in range (len (short_bold_columns)):
+		f.write('%s\t'%short_bold_columns[i])
+		short_bold_columns[i] = short_bold_columns[i]. replace ('atlas.', '')
+		short_bold_columns[i] = short_bold_columns[i]. replace ('(', '')
+		short_bold_columns[i] = short_bold_columns[i]. replace (')', '')
+		short_bold_columns[i] = '_'.join (short_bold_columns[i]. split (' ')[0:-1])
+		if short_bold_columns[i][-1] == '_':
+			short_bold_columns[i] = short_bold_columns[i][:-1]
+		f.write('%s\t'%short_bold_columns[i])
+		f.write('%d\n'%(i+1))
+
+	f.close()
+	bold_hh_data. columns = short_bold_columns
+	bold_hr_data. columns = short_bold_columns
+
+	for a in short_bold_columns:
+		print (a)
 	save_files (behavioral_hh_data, behavioral_hr_data, bold_hh_data, bold_hr_data)
