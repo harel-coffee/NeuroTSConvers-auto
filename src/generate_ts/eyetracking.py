@@ -256,9 +256,13 @@ if __name__ == '__main__':
 				for x, y in landmarks:
 					cv2.circle (bgr_image, (x, y), 2, (255, 0, 0), -1)
 
-			# rescale coordinate according the screen of the experience
+			# rescale coordinate according the screen of the experience with an exception for subject 19 (requires adding a lag)
+			if subject == "sub-19":
+				lag = 180
+			else:
+				lag = 0
 			translation_origin_x  =  int ( (float (display_coords[0]) -  bgr_image. shape[1]) / 2)
-			translation_origin_y  =  int ( (float (display_coords[1]) -  bgr_image. shape[0]) / 2)
+			translation_origin_y  =  int ( (float (display_coords[1]) -  bgr_image. shape[0]) / 2) - lag
 			#x = (gaze_coordiantes [nb_frames, 1] - 320)#   / float (display_coords[0])) * frame_width   #1279 1919
 			#y = (gaze_coordiantes [nb_frames, 2] - 272)# / float (display_coords[1])) * frame_height   #1023 1079
 
@@ -324,7 +328,7 @@ if __name__ == '__main__':
 	face_time_series = resampling. resample_ts (np. array (face_time_series), physio_index, mode = "mean")[:, 1:]
 
 	# Concatenate all columns in one dataframe
-	output_time_series = pd.DataFrame (np. concatenate ((movement_quantity, saccades, blinks, pupil_area, face_time_series), axis = 1),
-										columns = ["Time (s)", "Gaze_movement_quantity_P", "Saccades_P", "Blinks_P", "Pupil_area_P", "Face_looks_P", "Mouth_looks_P", "Eyes_looks_P"])
+	output_time_series = pd.DataFrame (np. concatenate ((movement_quantity, saccades, blinks, pupil_area), axis = 1),
+										columns = ["Time (s)", "Gaze_movement_quantity_P", "Saccades_P", "Blinks_P", "Pupil_area_P"])
 
 	output_time_series.to_pickle (out_file + ".pkl")

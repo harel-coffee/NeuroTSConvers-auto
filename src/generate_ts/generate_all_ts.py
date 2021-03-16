@@ -91,12 +91,12 @@ def mfcc_features (subject, left):
 def process_videos (subject, type):
 
 	print ("\t" + subject, 15*'-', '\n')
-	out_dir_openface = "time_series/" + subject + "/openface_features_ts/"
+	out_dir_openface = "time_series/" + subject + "/openface_ts/"
 	out_dir_eyetracking = "time_series/" + subject + "/eyetracking_ts/"
 	out_dir_facial = "time_series/" + subject + "/facial_features_ts/"
 	out_dir_emotions = "time_series/" + subject + "/emotions_ts/"
 	out_dir_smiles = "time_series/" + subject + "/smiles_ts/"
-	out_dir_dlibSmiles = "time_series/" + subject + "/dlib_smiles_ts/"
+	out_dir_dlibSmiles = "time_series/" + subject + "/smiles_ts/"
 
 	for out_dir in [out_dir_openface, out_dir_eyetracking, out_dir_facial, out_dir_emotions, out_dir_smiles, out_dir_dlibSmiles]:
 		if not os. path. exists (out_dir):
@@ -113,7 +113,7 @@ def process_videos (subject, type):
 	for video in videos:
 		#try:
 		if type == "eye":
-			os. system ("python3 src/generate_ts/eyetracking.py " + video + " " + out_dir_eyetracking)
+			os. system ("python3 src/generate_ts/eyetracking.py " + video + " " + out_dir_eyetracking + " --save")
 
 		elif type == 'e':
 			os.system("python3 src/generate_ts/facial_emotions.py " +  video + " " + out_dir_emotions)
