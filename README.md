@@ -29,13 +29,13 @@ The aim is to detect the behavioral features that are responsible for the activa
 
   * Example, let's make evaluations on two brain areas using K_MEDOIDS as feature selection and the Random Forrest as classifier:
     ```bash
-     python src/find_models.py -rg 3 4 -p 6 -all -mthd K_MEDOIDS -m RF
+     python evaluation.py -rg 3 4 -p 6 -all -mthd K_MEDOIDS -m RF
     ```
 
 ## Training
   * After finding the appropriate model for each brain area, we can train the models on all available data:
     ```bash
-     python src/train_models.py -rg 1 2 3 4 5 6 7 8 9 10 -lag 7
+     python evaluation.py -rg 1 2 3 4 5 6 7 8 9 10 -lag 7
     ```
 ## Demo
   * To run a demo, we need data of a conversation between an interlocutor (human or robot), and a subject (human, on which we try to predict fMRI responses). The data consist of the video of the interlocutor, and the audios of both the participant and the interlocutor (with transcriptions), and an eyetracking file of the subject
